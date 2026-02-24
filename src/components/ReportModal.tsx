@@ -1,7 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Sector, SECTORS, SECTOR_COLORS, ZONES } from '@/lib/mockData';
+
+const PinLocationMap = dynamic(() => import('./PinLocationMap'), {
+    ssr: false,
+    loading: () => <div className="w-full h-[180px] bg-background rounded border border-border animate-pulse" />,
+});
 
 interface ReportModalProps {
     isOpen: boolean;
@@ -15,7 +21,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
     const [description, setDescription] = useState('');
     const [address, setAddress] = useState('');
     const [zone, setZone] = useState('');
-    const [pinPosition, setPinPosition] = useState({ x: 200, y: 75 });
+    const [pinLat, setPinLat] = useState(5.5825);
+    const [pinLng, setPinLng] = useState(-0.2010);
     const [photos, setPhotos] = useState<string[]>([]);
 
     if (!isOpen) return null;
@@ -43,11 +50,9 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
         setPhotos((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const handleMapClick = (e: React.MouseEvent<SVGSVGElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 400;
-        const y = ((e.clientY - rect.top) / rect.height) * 150;
-        setPinPosition({ x, y });
+    const handlePinChange = (lat: number, lng: number) => {
+        setPinLat(lat);
+        setPinLng(lng);
     };
 
     const resetAndClose = () => {
@@ -58,7 +63,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
         setAddress('');
         setZone('');
         setPhotos([]);
-        setPinPosition({ x: 200, y: 75 });
+        setPinLat(5.5825);
+        setPinLng(-0.2010);
         onClose();
     };
 
@@ -133,8 +139,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                                                 key={s}
                                                 onClick={() => setSector(s)}
                                                 className={`flex items-center gap-2 px-3 py-2.5 border text-sm font-body cursor-pointer transition-all ${isSelected
-                                                        ? 'bg-primary-text text-white'
-                                                        : 'bg-white text-primary-text border-border hover:bg-background'
+                                                    ? 'bg-primary-text text-white'
+                                                    : 'bg-white text-primary-text border-border hover:bg-background'
                                                     }`}
                                                 style={isSelected ? { borderColor: color } : {}}
                                             >
@@ -191,34 +197,16 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
 
                             <div>
                                 <label className="section-label block mb-2">Pin Location</label>
-                                <div className="border border-border rounded overflow-hidden cursor-crosshair">
-                                    <svg
-                                        width="100%"
-                                        height="150"
-                                        viewBox="0 0 400 150"
-                                        onClick={handleMapClick}
-                                    >
-                                        <defs>
-                                            <pattern id="reportGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E5E5E3" strokeWidth="0.5" />
-                                            </pattern>
-                                        </defs>
-                                        <rect width="400" height="150" fill="#F8F8F6" />
-                                        <rect width="400" height="150" fill="url(#reportGrid)" />
-                                        {/* Roads */}
-                                        <line x1="0" y1="75" x2="400" y2="75" stroke="#E5E5E3" strokeWidth="2" />
-                                        <line x1="200" y1="0" x2="200" y2="150" stroke="#E5E5E3" strokeWidth="1.5" />
-                                        <line x1="100" y1="0" x2="300" y2="150" stroke="#E5E5E3" strokeWidth="1" />
-                                        {/* Pin */}
-                                        <circle cx={pinPosition.x} cy={pinPosition.y} r="8" fill="#C62828" opacity="0.2" />
-                                        <circle cx={pinPosition.x} cy={pinPosition.y} r="5" fill="#C62828" />
-                                        <circle cx={pinPosition.x} cy={pinPosition.y} r="2" fill="white" />
-                                    </svg>
-                                </div>
+                                <PinLocationMap
+                                    lat={pinLat}
+                                    lng={pinLng}
+                                    onPinChange={handlePinChange}
+                                    height={180}
+                                />
                                 <div className="flex items-center justify-between mt-1.5">
-                                    <span className="text-[10px] text-muted-text font-body">Tap to pin exact location</span>
+                                    <span className="text-[10px] text-muted-text font-body">Tap or drag pin to set location</span>
                                     <span className="text-[10px] font-mono text-muted-text">
-                                        5.{(5700 + Math.round(pinPosition.y * 0.5)).toString()}°N, 0.{(1900 + Math.round(pinPosition.x * 0.3)).toString()}°W
+                                        {pinLat.toFixed(4)}°N, {Math.abs(pinLng).toFixed(4)}°W
                                     </span>
                                 </div>
                             </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
     Issue, Comment, Status, Severity, STATUSES, SEVERITIES, STAFF,
     STATUS_COLORS, SEVERITY_COLORS, SECTOR_COLORS, SECTOR_EMOJIS,
@@ -11,6 +12,11 @@ import StatusPill from './StatusPill';
 import SeverityPill from './SeverityPill';
 import SectorTag from './SectorTag';
 
+const LocationMiniMap = dynamic(() => import('./LocationMiniMap'), {
+    ssr: false,
+    loading: () => <div className="w-full h-[120px] bg-background rounded border border-border animate-pulse" />,
+});
+
 interface IssueDetailDrawerProps {
     issue: Issue | null;
     onClose: () => void;
@@ -20,6 +26,7 @@ export default function IssueDetailDrawer({ issue, onClose }: IssueDetailDrawerP
     const { role } = useRole();
     const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'manage'>('details');
     const [newComment, setNewComment] = useState('');
+    const [upvoted, setUpvoted] = useState(false);
     const [status, setStatus] = useState<Status>(issue?.status || 'Reported');
     const [severity, setSeverity] = useState<Severity>(issue?.severity || 'Low');
     const [assignee, setAssignee] = useState(issue?.assignedTo || '');
@@ -134,23 +141,12 @@ export default function IssueDetailDrawer({ issue, onClose }: IssueDetailDrawerP
                                     {issue.location.gps.lat.toFixed(4)}°N, {Math.abs(issue.location.gps.lng).toFixed(4)}°W
                                 </p>
                                 {/* Mini map tile */}
-                                <div className="w-full h-[120px] bg-background rounded border border-border relative overflow-hidden">
-                                    <svg width="100%" height="100%" viewBox="0 0 400 120">
-                                        {/* Grid */}
-                                        <defs>
-                                            <pattern id="mapGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E5E5E3" strokeWidth="0.5" />
-                                            </pattern>
-                                        </defs>
-                                        <rect width="400" height="120" fill="url(#mapGrid)" />
-                                        {/* Roads */}
-                                        <line x1="0" y1="60" x2="400" y2="60" stroke="#E5E5E3" strokeWidth="2" />
-                                        <line x1="200" y1="0" x2="200" y2="120" stroke="#E5E5E3" strokeWidth="2" />
-                                        {/* Pin */}
-                                        <circle cx="200" cy="55" r="6" fill={sectorColor} />
-                                        <circle cx="200" cy="55" r="3" fill="white" />
-                                    </svg>
-                                </div>
+                                <LocationMiniMap
+                                    lat={issue.location.gps.lat}
+                                    lng={issue.location.gps.lng}
+                                    color={sectorColor}
+                                    height={120}
+                                />
                             </div>
 
                             {/* Status Timeline */}
@@ -192,9 +188,13 @@ export default function IssueDetailDrawer({ issue, onClose }: IssueDetailDrawerP
 
                             {/* Upvote + Comments shortcut */}
                             <div className="flex items-center gap-4 pt-2 border-t border-border">
-                                <button className="flex items-center gap-1.5 text-sm text-muted-text hover:text-primary-text cursor-pointer">
-                                    <span>△</span>
-                                    <span className="font-mono">{issue.upvotes}</span>
+                                <button
+                                    onClick={() => setUpvoted(!upvoted)}
+                                    className={`flex items-center gap-1.5 text-sm cursor-pointer transition-colors ${upvoted ? 'text-primary-text' : 'text-muted-text hover:text-primary-text'
+                                        }`}
+                                >
+                                    <span>{upvoted ? '▲' : '△'}</span>
+                                    <span className="font-mono">{issue.upvotes + (upvoted ? 1 : 0)}</span>
                                     <span className="font-body">Upvote</span>
                                 </button>
                                 <button
@@ -273,8 +273,8 @@ export default function IssueDetailDrawer({ issue, onClose }: IssueDetailDrawerP
                                             key={s}
                                             onClick={() => setSeverity(s)}
                                             className={`flex-1 py-2 text-xs font-body font-medium border cursor-pointer transition-all ${severity === s
-                                                    ? 'text-white'
-                                                    : 'bg-white text-primary-text border-border hover:bg-background'
+                                                ? 'text-white'
+                                                : 'bg-white text-primary-text border-border hover:bg-background'
                                                 }`}
                                             style={severity === s ? {
                                                 backgroundColor: SEVERITY_COLORS[s],
@@ -382,8 +382,8 @@ function CommentItem({ comment }: { comment: Comment }) {
             <div className="flex items-center gap-2 mb-2">
                 <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-body font-medium flex-shrink-0 ${comment.isMPOffice
-                            ? 'bg-primary-text text-white'
-                            : 'bg-background text-muted-text'
+                        ? 'bg-primary-text text-white'
+                        : 'bg-background text-muted-text'
                         }`}
                 >
                     {comment.avatar}
