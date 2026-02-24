@@ -14,34 +14,33 @@ interface LeafletMapProps {
 }
 
 // Ayawaso West Wuogon center coordinates
-const AWW_CENTER: [number, number] = [5.5825, -0.2010];
+const AWW_CENTER: [number, number] = [5.6150, -0.1900];
 const AWW_ZOOM = 14;
 
 // Approximate boundary polygon for Ayawaso West Wuogon
 const AWW_BOUNDARY: [number, number][] = [
-    [5.5650, -0.2200],
-    [5.5650, -0.1850],
-    [5.5720, -0.1820],
-    [5.5850, -0.1830],
-    [5.5950, -0.1870],
-    [5.6020, -0.1900],
-    [5.6050, -0.1950],
-    [5.6030, -0.2050],
-    [5.5980, -0.2150],
-    [5.5900, -0.2200],
-    [5.5800, -0.2230],
-    [5.5700, -0.2220],
-    [5.5650, -0.2200],
+    [5.5950, -0.2200],
+    [5.5950, -0.1750],
+    [5.6000, -0.1550],
+    [5.6200, -0.1450],
+    [5.6400, -0.1500],
+    [5.6480, -0.1600],
+    [5.6450, -0.1800],
+    [5.6350, -0.2000],
+    [5.6250, -0.2150],
+    [5.6150, -0.2250],
+    [5.6050, -0.2250],
+    [5.5950, -0.2200],
 ];
 
-// Zone approximate centers (refined real coordinates)
+// Zone approximate centers (real GPS coordinates)
 const ZONE_COORDS: Record<string, [number, number]> = {
-    'Nima': [5.5780, -0.2050],
-    'Mamobi': [5.5735, -0.2080],
-    'Kanda': [5.5845, -0.1920],
-    'New Town': [5.5700, -0.2130],
-    'Abelemkpe': [5.5890, -0.2010],
-    'Dzorwulu': [5.5950, -0.1980],
+    'East Legon': [5.6379, -0.1612],
+    'Okponglo': [5.6285, -0.1920],
+    'Roman Ridge': [5.6029, -0.2003],
+    'Airport Residential': [5.6064, -0.1837],
+    'Abelemkpe': [5.6167, -0.2167],
+    'Dzorwulu': [5.6147, -0.1973],
 };
 
 function createSeverityIcon(severity: string, isSelected: boolean = false): L.DivIcon {

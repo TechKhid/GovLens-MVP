@@ -12,7 +12,7 @@ interface PinLocationMapProps {
 }
 
 // Ayawaso West Wuogon center
-const DEFAULT_CENTER: [number, number] = [5.5825, -0.2010];
+const AWW_CENTER: [number, number] = [5.6150, -0.1900];
 
 export default function PinLocationMap({ lat, lng, onPinChange, height = 180 }: PinLocationMapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -25,7 +25,7 @@ export default function PinLocationMap({ lat, lng, onPinChange, height = 180 }: 
         if (!containerRef.current || mapRef.current) return;
 
         const map = L.map(containerRef.current, {
-            center: lat && lng ? [lat, lng] : DEFAULT_CENTER,
+            center: lat && lng ? [lat, lng] : AWW_CENTER,
             zoom: 15,
             zoomControl: true,
             scrollWheelZoom: true,
@@ -52,7 +52,7 @@ export default function PinLocationMap({ lat, lng, onPinChange, height = 180 }: 
             iconAnchor: [10, 10],
         });
 
-        const marker = L.marker([lat || DEFAULT_CENTER[0], lng || DEFAULT_CENTER[1]], {
+        const marker = L.marker([lat || AWW_CENTER[0], lng || AWW_CENTER[1]], {
             icon,
             draggable: true,
         }).addTo(map);

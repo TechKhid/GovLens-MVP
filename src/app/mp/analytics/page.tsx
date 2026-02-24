@@ -30,8 +30,8 @@ export default function AnalyticsPage() {
 
     // Recurring issues
     const recurringIssues = [
-        { sector: 'Drainage' as Sector, count: 12, description: 'Flooding reports during rainy periods in Nima and Mamobi' },
-        { sector: 'Sanitation' as Sector, count: 9, description: 'Waste collection delays in New Town area' },
+        { sector: 'Drainage' as Sector, count: 12, description: 'Flooding reports during rainy periods in East Legon and Okponglo' },
+        { sector: 'Sanitation' as Sector, count: 9, description: 'Waste collection delays in Airport Residential area' },
         { sector: 'Infrastructure' as Sector, count: 7, description: 'Recurring streetlight outages across multiple zones' },
         { sector: 'Water' as Sector, count: 5, description: 'Intermittent water supply in Dzorwulu residential areas' },
     ];
@@ -47,7 +47,7 @@ export default function AnalyticsPage() {
             icon: '🌧️',
             label: 'Drainage Crisis Escalating',
             color: SEVERITY_COLORS['Critical'],
-            text: 'Drainage issues in Nima and Mamobi increased 34% in 30 days. Rainy season risk is elevated. Recommend pre-emptive drain clearing in flood-prone corridors.',
+            text: 'Drainage issues in East Legon and Okponglo increased 34% in 30 days. Rainy season risk is elevated. Recommend pre-emptive drain clearing in flood-prone corridors.',
         },
         {
             icon: '⚡',
@@ -57,9 +57,9 @@ export default function AnalyticsPage() {
         },
         {
             icon: '📍',
-            label: 'Nima Zone Overload',
+            label: 'East Legon Zone Overload',
             color: SEVERITY_COLORS['Critical'],
-            text: 'Nima accounts for 33% of all open issues but only 17% of resolutions. Staff reallocation to Nima this week could reduce backlog by an estimated 15 issues.',
+            text: 'East Legon accounts for 33% of all open issues but only 17% of resolutions. Staff reallocation to East Legon this week could reduce backlog by an estimated 15 issues.',
         },
         {
             icon: '✅',

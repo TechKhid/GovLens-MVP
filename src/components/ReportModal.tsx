@@ -21,8 +21,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
     const [description, setDescription] = useState('');
     const [address, setAddress] = useState('');
     const [zone, setZone] = useState('');
-    const [pinLat, setPinLat] = useState(5.5825);
-    const [pinLng, setPinLng] = useState(-0.2010);
+    const [pinLat, setPinLat] = useState(5.6150);
+    const [pinLng, setPinLng] = useState(-0.1900);
     const [photos, setPhotos] = useState<string[]>([]);
 
     if (!isOpen) return null;
@@ -63,8 +63,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
         setAddress('');
         setZone('');
         setPhotos([]);
-        setPinLat(5.5825);
-        setPinLng(-0.2010);
+        setPinLat(5.6150);
+        setPinLng(-0.1900);
         onClose();
     };
 
