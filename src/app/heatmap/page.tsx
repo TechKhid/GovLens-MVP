@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
     mockIssues, mockZones, ZoneData, SEVERITY_COLORS,
     getZoneSeverity, STATUS_COLORS,
@@ -9,6 +10,19 @@ import StatusPill from '@/components/StatusPill';
 import SectorTag from '@/components/SectorTag';
 import IssueDetailDrawer from '@/components/IssueDetailDrawer';
 import EmptyState from '@/components/EmptyState';
+
+// Dynamic import — Leaflet needs `window`, so disable SSR
+const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full rounded-lg bg-background flex items-center justify-center" style={{ height: '500px' }}>
+            <div className="text-center">
+                <div className="w-8 h-8 border-2 border-primary-text border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <span className="text-sm text-muted-text font-body">Loading map…</span>
+            </div>
+        </div>
+    ),
+});
 
 export default function HeatmapPage() {
     const [selectedZone, setSelectedZone] = useState<ZoneData | null>(null);
@@ -41,110 +55,13 @@ export default function HeatmapPage() {
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Map */}
                 <div className="flex-1 card p-4">
-                    <svg
-                        viewBox="0 0 620 460"
-                        className="w-full"
-                        style={{ maxHeight: '500px' }}
-                    >
-                        {/* Background grid */}
-                        <defs>
-                            <pattern id="heatGrid" width="30" height="30" patternUnits="userSpaceOnUse">
-                                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#E5E5E3" strokeWidth="0.3" />
-                            </pattern>
-                        </defs>
-                        <rect width="620" height="460" fill="#F8F8F6" />
-                        <rect width="620" height="460" fill="url(#heatGrid)" />
-
-                        {/* Simplified road lines */}
-                        <line x1="0" y1="230" x2="620" y2="230" stroke="#E5E5E3" strokeWidth="2" />
-                        <line x1="310" y1="0" x2="310" y2="460" stroke="#E5E5E3" strokeWidth="2" />
-                        <line x1="0" y1="120" x2="620" y2="350" stroke="#E5E5E3" strokeWidth="1" />
-                        <line x1="100" y1="0" x2="520" y2="460" stroke="#E5E5E3" strokeWidth="1" />
-
-                        {/* Dashed coastline suggestion */}
-                        <path
-                            d="M 580,400 Q 600,350 590,300 Q 610,250 600,200"
-                            fill="none"
-                            stroke="#E5E5E3"
-                            strokeWidth="1.5"
-                            strokeDasharray="6,4"
-                        />
-
-                        {/* Zone heat blobs and dots */}
-                        {mockZones.map((zone) => {
-                            const severity = getZoneSeverity(zone.issueCount);
-                            const color = SEVERITY_COLORS[severity];
-                            const isHovered = hoveredZone === zone.id;
-                            const isSelected = selectedZone?.id === zone.id;
-
-                            return (
-                                <g
-                                    key={zone.id}
-                                    className="cursor-pointer"
-                                    onClick={() => setSelectedZone(isSelected ? null : zone)}
-                                    onMouseEnter={() => setHoveredZone(zone.id)}
-                                    onMouseLeave={() => setHoveredZone(null)}
-                                >
-                                    {/* Heat blob */}
-                                    <circle
-                                        cx={zone.x}
-                                        cy={zone.y}
-                                        r={zone.radius}
-                                        fill={color}
-                                        opacity={0.15}
-                                        className="transition-all duration-200"
-                                    />
-                                    <circle
-                                        cx={zone.x}
-                                        cy={zone.y}
-                                        r={zone.radius * 0.6}
-                                        fill={color}
-                                        opacity={0.1}
-                                    />
-
-                                    {/* Dot marker */}
-                                    <circle
-                                        cx={zone.x}
-                                        cy={zone.y}
-                                        r={isHovered || isSelected ? 8 : 5}
-                                        fill={isSelected ? '#111111' : color}
-                                        className="transition-all duration-200"
-                                    />
-                                    <circle
-                                        cx={zone.x}
-                                        cy={zone.y}
-                                        r={2}
-                                        fill="white"
-                                    />
-
-                                    {/* Zone label on hover/select */}
-                                    {(isHovered || isSelected) && (
-                                        <g>
-                                            <rect
-                                                x={zone.x - 40}
-                                                y={zone.y - zone.radius - 28}
-                                                width="80"
-                                                height="22"
-                                                fill="white"
-                                                stroke="#E5E5E3"
-                                                strokeWidth="1"
-                                                rx="2"
-                                            />
-                                            <text
-                                                x={zone.x}
-                                                y={zone.y - zone.radius - 14}
-                                                textAnchor="middle"
-                                                className="text-[11px] font-body fill-primary-text"
-                                                style={{ fontFamily: 'var(--font-dm-sans)' }}
-                                            >
-                                                {zone.name} ({zone.issueCount})
-                                            </text>
-                                        </g>
-                                    )}
-                                </g>
-                            );
-                        })}
-                    </svg>
+                    <LeafletMap
+                        issues={mockIssues}
+                        zones={mockZones}
+                        selectedZone={selectedZone}
+                        onZoneSelect={setSelectedZone}
+                        onIssueSelect={setSelectedIssueId}
+                    />
 
                     {/* Legend */}
                     <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border">

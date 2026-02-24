@@ -3,116 +3,161 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-background text-primary-text font-body;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+    body {
+        @apply bg-background text-primary-text font-body;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
 
-  h1, h2, h3, h4, h5 {
-    @apply font-display text-primary-text;
-  }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+        @apply font-display text-primary-text;
+    }
 
-  h1 { @apply text-3xl font-bold; }
-  h2 { @apply text-2xl font-bold; }
-  h3 { @apply text-xl font-semibold; }
-  h4 { @apply text-lg font-semibold; }
+    h1 {
+        @apply text-3xl font-bold;
+    }
+
+    h2 {
+        @apply text-2xl font-bold;
+    }
+
+    h3 {
+        @apply text-xl font-semibold;
+    }
+
+    h4 {
+        @apply text-lg font-semibold;
+    }
 }
 
 @layer components {
-  .pill {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium font-body tracking-wide;
-  }
+    .pill {
+        @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium font-body tracking-wide;
+    }
 
-  .card {
-    @apply bg-white border border-border;
-  }
+    .card {
+        @apply bg-white border border-border;
+    }
 
-  .mono-value {
-    @apply font-mono tabular-nums;
-  }
+    .mono-value {
+        @apply font-mono tabular-nums;
+    }
 
-  .btn-primary {
-    @apply bg-primary-text text-white px-4 py-2.5 font-body text-sm font-medium
-           hover:opacity-90 transition-opacity cursor-pointer;
-  }
+    .btn-primary {
+        @apply bg-primary-text text-white px-4 py-2.5 font-body text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer;
+    }
 
-  .btn-secondary {
-    @apply border border-border bg-white text-primary-text px-4 py-2.5 font-body text-sm font-medium
-           hover:bg-background transition-colors cursor-pointer;
-  }
+    .btn-secondary {
+        @apply border border-border bg-white text-primary-text px-4 py-2.5 font-body text-sm font-medium hover:bg-background transition-colors cursor-pointer;
+    }
 
-  .input-field {
-    @apply w-full border border-border bg-white px-3 py-2.5 font-body text-sm
-           focus:outline-none focus:border-primary-text transition-colors;
-  }
+    .input-field {
+        @apply w-full border border-border bg-white px-3 py-2.5 font-body text-sm focus:outline-none focus:border-primary-text transition-colors;
+    }
 
-  .textarea-field {
-    @apply w-full border border-border bg-white px-3 py-2.5 font-body text-sm
-           focus:outline-none focus:border-primary-text transition-colors resize-none;
-  }
+    .textarea-field {
+        @apply w-full border border-border bg-white px-3 py-2.5 font-body text-sm focus:outline-none focus:border-primary-text transition-colors resize-none;
+    }
 
-  .drawer-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-30 z-40 transition-opacity;
-  }
+    .drawer-overlay {
+        @apply fixed inset-0 bg-black bg-opacity-30 z-40 transition-opacity;
+    }
 
-  .drawer-panel {
-    @apply fixed top-0 right-0 h-full bg-white border-l border-border z-50
-           overflow-y-auto;
-    width: 540px;
-  }
+    .drawer-panel {
+        @apply fixed top-0 right-0 h-full bg-white border-l border-border z-50 overflow-y-auto;
+        width: 540px;
+    }
 
-  .filter-pill {
-    @apply px-3 py-1.5 text-sm font-body border border-border cursor-pointer
-           transition-colors hover:bg-white;
-  }
+    .filter-pill {
+        @apply px-3 py-1.5 text-sm font-body border border-border cursor-pointer transition-colors hover:bg-white;
+    }
 
-  .filter-pill-active {
-    @apply bg-white font-medium;
-  }
+    .filter-pill-active {
+        @apply bg-white font-medium;
+    }
 
-  .section-label {
-    @apply text-xs font-body font-medium text-muted-text uppercase tracking-wider;
-  }
+    .section-label {
+        @apply text-xs font-body font-medium text-muted-text uppercase tracking-wider;
+    }
 
-  .tab-button {
-    @apply px-4 py-2.5 text-sm font-body font-medium border-b-2 border-transparent
-           text-muted-text cursor-pointer transition-colors hover:text-primary-text;
-  }
+    .tab-button {
+        @apply px-4 py-2.5 text-sm font-body font-medium border-b-2 border-transparent text-muted-text cursor-pointer transition-colors hover:text-primary-text;
+    }
 
-  .tab-button-active {
-    @apply text-primary-text border-primary-text;
-  }
+    .tab-button-active {
+        @apply text-primary-text border-primary-text;
+    }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+    width: 6px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #F8F8F6;
+    background: #F8F8F6;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #E5E5E3;
-  border-radius: 3px;
+    background: #E5E5E3;
+    border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #6B6B6B;
+    background: #6B6B6B;
 }
 
 /* Animations */
 @keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
 }
+
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .animate-slide-in-right {
-  animation: slideInRight 0.25s ease-out;
+    animation: slideInRight 0.25s ease-out;
 }
+
 .animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Leaflet overrides */
+.leaflet-tooltip {
+    font-family: var(--font-dm-sans), sans-serif;
+    font-size: 12px;
+    border: 1px solid #E5E5E3;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+.custom-marker,
+.zone-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+.constituency-tooltip {
+    font-family: var(--font-dm-sans), sans-serif;
+    font-weight: 600;
+    font-size: 13px;
 }
