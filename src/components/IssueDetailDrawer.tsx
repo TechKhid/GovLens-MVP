@@ -20,13 +20,14 @@ const LocationMiniMap = dynamic(() => import('./LocationMiniMap'), {
 interface IssueDetailDrawerProps {
     issue: Issue | null;
     onClose: () => void;
+    isUpvoted?: boolean;
+    onUpvote?: () => void;
 }
 
-export default function IssueDetailDrawer({ issue, onClose }: IssueDetailDrawerProps) {
+export default function IssueDetailDrawer({ issue, onClose, isUpvoted = false, onUpvote }: IssueDetailDrawerProps) {
     const { role } = useRole();
     const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'manage'>('details');
     const [newComment, setNewComment] = useState('');
-    const [upvoted, setUpvoted] = useState(false);
     const [status, setStatus] = useState<Status>(issue?.status || 'Reported');
     const [severity, setSeverity] = useState<Severity>(issue?.severity || 'Low');
     const [assignee, setAssignee] = useState(issue?.assignedTo || '');
@@ -189,12 +190,12 @@ export default function IssueDetailDrawer({ issue, onClose }: IssueDetailDrawerP
                             {/* Upvote + Comments shortcut */}
                             <div className="flex items-center gap-4 pt-2 border-t border-border">
                                 <button
-                                    onClick={() => setUpvoted(!upvoted)}
-                                    className={`flex items-center gap-1.5 text-sm cursor-pointer transition-colors ${upvoted ? 'text-primary-text' : 'text-muted-text hover:text-primary-text'
+                                    onClick={() => onUpvote?.()}
+                                    className={`flex items-center gap-1.5 text-sm cursor-pointer transition-colors ${isUpvoted ? 'text-primary-text' : 'text-muted-text hover:text-primary-text'
                                         }`}
                                 >
-                                    <span>{upvoted ? '▲' : '△'}</span>
-                                    <span className="font-mono">{issue.upvotes + (upvoted ? 1 : 0)}</span>
+                                    <span>{isUpvoted ? '▲' : '△'}</span>
+                                    <span className="font-mono">{issue.upvotes + (isUpvoted ? 1 : 0)}</span>
                                     <span className="font-body">Upvote</span>
                                 </button>
                                 <button

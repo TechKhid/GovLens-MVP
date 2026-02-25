@@ -194,6 +194,8 @@ export default function IssueTracker() {
                 <IssueDetailDrawer
                     issue={selectedIssue}
                     onClose={() => setSelectedIssueId(null)}
+                    isUpvoted={selectedIssue ? upvotedIds.has(selectedIssue.id) : false}
+                    onUpvote={() => selectedIssue && handleUpvote(selectedIssue.id)}
                 />
             )}
 
