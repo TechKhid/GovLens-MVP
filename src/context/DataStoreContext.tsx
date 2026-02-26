@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import {
     Issue, Comment, BriefingPost, Sector, Status, Severity,
     mockIssues, mockBriefings, mockZones, ZoneData, ZONES,
@@ -44,26 +44,38 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     // --- ID generators ---
 
     const nextIssueId = useCallback(() => {
-        const next = issueCounter + 1;
-        setIssueCounter(next);
-        return `GL-${String(next).padStart(3, '0')}`;
-    }, [issueCounter]);
+        let id = '';
+        setIssueCounter((c) => {
+            const next = c + 1;
+            id = `GL-${String(next).padStart(3, '0')}`;
+            return next;
+        });
+        return id;
+    }, []);
 
     const nextBriefingId = useCallback(() => {
-        const next = briefingCounter + 1;
-        setBriefingCounter(next);
-        return `B-${String(next).padStart(3, '0')}`;
-    }, [briefingCounter]);
+        let id = '';
+        setBriefingCounter((c) => {
+            const next = c + 1;
+            id = `B-${String(next).padStart(3, '0')}`;
+            return next;
+        });
+        return id;
+    }, []);
 
     // --- Issue actions ---
 
     const addIssue = useCallback((issueData: Omit<Issue, 'id'>): string => {
-        const id = `GL-${String(issueCounter + 1).padStart(3, '0')}`;
-        setIssueCounter((c) => c + 1);
-        const newIssue: Issue = { ...issueData, id };
-        setIssues((prev) => [newIssue, ...prev]);
+        let id = '';
+        setIssueCounter((c) => {
+            const next = c + 1;
+            id = `GL-${String(next).padStart(3, '0')}`;
+            return next;
+        });
+        // Use a ref-stable setter so we don't depend on issueCounter
+        setIssues((prev) => [{ ...issueData, id: id || `GL-${String(prev.length + 1).padStart(3, '0')}` }, ...prev]);
         return id;
-    }, [issueCounter]);
+    }, []);
 
     const updateIssue = useCallback((id: string, patch: Partial<Issue>) => {
         setIssues((prev) =>
@@ -90,8 +102,19 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     const toggleUpvote = useCallback((id: string) => {
         setUpvotedIds((prev) => {
             const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
+            const wasUpvoted = next.has(id);
+            if (wasUpvoted) next.delete(id);
             else next.add(id);
+
+            // Also update the issue's upvotes count
+            setIssues((prevIssues) =>
+                prevIssues.map((issue) =>
+                    issue.id === id
+                        ? { ...issue, upvotes: issue.upvotes + (wasUpvoted ? -1 : 1) }
+                        : issue
+                )
+            );
+
             return next;
         });
     }, []);
@@ -101,30 +124,35 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     // --- Briefing actions ---
 
     const addBriefing = useCallback((postData: Omit<BriefingPost, 'id'>): string => {
-        const id = `B-${String(briefingCounter + 1).padStart(3, '0')}`;
-        setBriefingCounter((c) => c + 1);
-        const newPost: BriefingPost = { ...postData, id };
-        setBriefings((prev) => [newPost, ...prev]);
+        let id = '';
+        setBriefingCounter((c) => {
+            const next = c + 1;
+            id = `B-${String(next).padStart(3, '0')}`;
+            return next;
+        });
+        setBriefings((prev) => [{ ...postData, id: id || `B-${String(prev.length + 1).padStart(3, '0')}` }, ...prev]);
         return id;
-    }, [briefingCounter]);
+    }, []);
+
+    // --- Memoized value ---
+
+    const value = useMemo<DataStoreContextType>(() => ({
+        issues,
+        briefings,
+        zones: mockZones,
+        upvotedIds,
+        addIssue,
+        updateIssue,
+        addComment,
+        toggleUpvote,
+        isUpvoted,
+        addBriefing,
+        nextIssueId,
+        nextBriefingId,
+    }), [issues, briefings, upvotedIds, addIssue, updateIssue, addComment, toggleUpvote, isUpvoted, addBriefing, nextIssueId, nextBriefingId]);
 
     return (
-        <DataStoreContext.Provider
-            value={{
-                issues,
-                briefings,
-                zones: mockZones,
-                upvotedIds,
-                addIssue,
-                updateIssue,
-                addComment,
-                toggleUpvote,
-                isUpvoted,
-                addBriefing,
-                nextIssueId,
-                nextBriefingId,
-            }}
-        >
+        <DataStoreContext.Provider value={value}>
             {children}
         </DataStoreContext.Provider>
     );

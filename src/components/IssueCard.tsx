@@ -9,10 +9,10 @@ interface IssueCardProps {
     onClick: () => void;
     onUpvote?: (e: React.MouseEvent) => void;
     isUpvoted?: boolean;
-    upvoteBoost?: number;
+
 }
 
-export default function IssueCard({ issue, onClick, onUpvote, isUpvoted = false, upvoteBoost = 0 }: IssueCardProps) {
+export default function IssueCard({ issue, onClick, onUpvote, isUpvoted = false }: IssueCardProps) {
     const sectorColor = SECTOR_COLORS[issue.sector];
     const sectorEmoji = SECTOR_EMOJIS[issue.sector];
 
@@ -101,7 +101,7 @@ export default function IssueCard({ issue, onClick, onUpvote, isUpvoted = false,
                                 title="Upvote"
                             >
                                 <span className="text-sm">{isUpvoted ? '▲' : '△'}</span>
-                                <span className="font-mono">{issue.upvotes + upvoteBoost}</span>
+                                <span className="font-mono">{issue.upvotes}</span>
                             </button>
                         </div>
                     </div>

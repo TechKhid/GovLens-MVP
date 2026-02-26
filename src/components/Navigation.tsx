@@ -1,5 +1,6 @@
 'use client';
 
+import { startTransition } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useRole } from '@/context/RoleContext';
@@ -11,11 +12,13 @@ export default function Navigation() {
 
     const switchRole = (newRole: 'citizen' | 'mp') => {
         setRole(newRole);
-        if (newRole === 'citizen') {
-            router.push('/');
-        } else {
-            router.push('/mp/dashboard');
-        }
+        startTransition(() => {
+            if (newRole === 'citizen') {
+                router.push('/');
+            } else {
+                router.push('/mp/dashboard');
+            }
+        });
     };
 
     const citizenLinks = [

@@ -96,7 +96,6 @@ export default function IssueTracker() {
                                     onClick={() => setSelectedIssueId(issue.id)}
                                     onUpvote={() => toggleUpvote(issue.id)}
                                     isUpvoted={isUpvoted(issue.id)}
-                                    upvoteBoost={isUpvoted(issue.id) ? 1 : 0}
                                 />
                             ))}
                         </div>
