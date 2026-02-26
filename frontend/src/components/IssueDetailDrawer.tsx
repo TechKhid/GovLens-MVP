@@ -197,7 +197,7 @@ export default function IssueDetailDrawer({ issue, onClose, isUpvoted = false, o
                                         }`}
                                 >
                                     <span>{isUpvoted ? '▲' : '△'}</span>
-                                    <span className="font-mono">{issue.upvotes + (isUpvoted ? 1 : 0)}</span>
+                                    <span className="font-mono">{issue.upvotes}</span>
                                     <span className="font-body">Upvote</span>
                                 </button>
                                 <button
