@@ -2,14 +2,16 @@
 
 import { useState } from 'react';
 import {
-    mockBriefings, PostType, Sector, SECTORS,
+    PostType, Sector, SECTORS,
     SECTOR_COLORS, POST_TYPE_COLORS, formatDate,
 } from '@/lib/mockData';
+import { useDataStore } from '@/context/DataStoreContext';
 import SectorTag from '@/components/SectorTag';
 
 const POST_TYPES: PostType[] = ['Briefing', 'Notice', 'Response'];
 
 export default function MPBriefingsPage() {
+    const { briefings, addBriefing } = useDataStore();
     const [postType, setPostType] = useState<PostType>('Briefing');
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
@@ -27,14 +29,32 @@ export default function MPBriefingsPage() {
 
     const canPublish = title.trim() !== '' && body.trim() !== '';
 
+    const handlePublish = () => {
+        if (!canPublish) return;
+        addBriefing({
+            type: postType,
+            title: title.trim(),
+            body: body.trim(),
+            sectors: selectedSectors.size > 0 ? Array.from(selectedSectors) : ['Other'],
+            date: new Date().toISOString(),
+            views: 0,
+            pinned: isPinned,
+            author: { name: 'MP Office', avatar: 'MP' },
+        });
+        setTitle('');
+        setBody('');
+        setSelectedSectors(new Set());
+        setIsPinned(false);
+    };
+
     // Stats
-    const totalPosts = mockBriefings.length;
-    const totalViews = mockBriefings.reduce((sum, b) => sum + b.views, 0);
-    const pinnedCount = mockBriefings.filter((b) => b.pinned).length;
+    const totalPosts = briefings.length;
+    const totalViews = briefings.reduce((sum, b) => sum + b.views, 0);
+    const pinnedCount = briefings.filter((b) => b.pinned).length;
     const countByType: Record<PostType, number> = {
-        Briefing: mockBriefings.filter((b) => b.type === 'Briefing').length,
-        Notice: mockBriefings.filter((b) => b.type === 'Notice').length,
-        Response: mockBriefings.filter((b) => b.type === 'Response').length,
+        Briefing: briefings.filter((b) => b.type === 'Briefing').length,
+        Notice: briefings.filter((b) => b.type === 'Notice').length,
+        Response: briefings.filter((b) => b.type === 'Response').length,
     };
 
     return (
@@ -62,8 +82,8 @@ export default function MPBriefingsPage() {
                                             key={type}
                                             onClick={() => setPostType(type)}
                                             className={`flex-1 py-2.5 text-sm font-body font-medium border cursor-pointer transition-all ${isActive
-                                                    ? 'text-white'
-                                                    : 'bg-white text-primary-text border-border hover:bg-background'
+                                                ? 'text-white'
+                                                : 'bg-white text-primary-text border-border hover:bg-background'
                                                 }`}
                                             style={isActive ? { backgroundColor: color, borderColor: color } : {}}
                                         >
@@ -109,8 +129,8 @@ export default function MPBriefingsPage() {
                                             key={sector}
                                             onClick={() => toggleSector(sector)}
                                             className={`pill cursor-pointer transition-all ${isSelected
-                                                    ? 'text-white'
-                                                    : 'bg-background text-primary-text hover:bg-white'
+                                                ? 'text-white'
+                                                : 'bg-background text-primary-text hover:bg-white'
                                                 }`}
                                             style={isSelected ? { backgroundColor: color } : {}}
                                         >
@@ -151,6 +171,7 @@ export default function MPBriefingsPage() {
                         <div className="flex items-center gap-3 pt-2 border-t border-border">
                             <button className="btn-secondary flex-1">Save Draft</button>
                             <button
+                                onClick={handlePublish}
                                 disabled={!canPublish}
                                 className={`btn-primary flex-1 ${!canPublish ? 'opacity-40 cursor-not-allowed' : ''}`}
                             >
@@ -203,7 +224,7 @@ export default function MPBriefingsPage() {
                             <h4 className="section-label">Recent Posts</h4>
                         </div>
                         <div className="divide-y divide-border">
-                            {mockBriefings.slice(0, 3).map((post) => (
+                            {briefings.slice(0, 3).map((post) => (
                                 <div key={post.id} className="px-4 py-3">
                                     <div className="flex items-center gap-1.5 mb-1">
                                         <span

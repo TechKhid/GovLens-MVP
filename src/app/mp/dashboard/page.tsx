@@ -2,11 +2,12 @@
 
 import { useState, useMemo } from 'react';
 import {
-    mockIssues, Status, Severity, Sector, Issue,
+    Status, Severity, Sector, Issue,
     STATUSES, SEVERITIES, SECTORS, ZONES,
     STATUS_COLORS, SEVERITY_COLORS, SECTOR_COLORS,
     formatDate,
 } from '@/lib/mockData';
+import { useDataStore } from '@/context/DataStoreContext';
 import StatCard from '@/components/StatCard';
 import StatusPill from '@/components/StatusPill';
 import SeverityPill from '@/components/SeverityPill';
@@ -15,23 +16,24 @@ import IssueDetailDrawer from '@/components/IssueDetailDrawer';
 import EmptyState from '@/components/EmptyState';
 
 export default function MPDashboard() {
+    const { issues, toggleUpvote, isUpvoted } = useDataStore();
     const [statusFilters, setStatusFilters] = useState<Set<Status>>(new Set());
     const [sectorFilters, setSectorFilters] = useState<Set<Sector>>(new Set());
     const [severityFilters, setSeverityFilters] = useState<Set<Severity>>(new Set());
     const [zoneFilters, setZoneFilters] = useState<Set<string>>(new Set());
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
 
-    const selectedIssue = mockIssues.find((i) => i.id === selectedIssueId) || null;
+    const selectedIssue = issues.find((i) => i.id === selectedIssueId) || null;
 
     const filteredIssues = useMemo(() => {
-        return mockIssues.filter((issue) => {
+        return issues.filter((issue) => {
             if (statusFilters.size > 0 && !statusFilters.has(issue.status)) return false;
             if (sectorFilters.size > 0 && !sectorFilters.has(issue.sector)) return false;
             if (severityFilters.size > 0 && !severityFilters.has(issue.severity)) return false;
             if (zoneFilters.size > 0 && !zoneFilters.has(issue.zone)) return false;
             return true;
         });
-    }, [statusFilters, sectorFilters, severityFilters, zoneFilters]);
+    }, [issues, statusFilters, sectorFilters, severityFilters, zoneFilters]);
 
     const toggleFilter = <T,>(set: Set<T>, value: T, setter: (s: Set<T>) => void) => {
         const next = new Set(set);
@@ -50,14 +52,14 @@ export default function MPDashboard() {
     const hasFilters = statusFilters.size > 0 || sectorFilters.size > 0 || severityFilters.size > 0 || zoneFilters.size > 0;
 
     // Stats
-    const openIssues = mockIssues.filter((i) => i.status !== 'Resolved').length;
+    const openIssues = issues.filter((i) => i.status !== 'Resolved').length;
     const ackRate = Math.round(
-        (mockIssues.filter((i) => i.status !== 'Reported').length / mockIssues.length) * 100
+        (issues.filter((i) => i.status !== 'Reported').length / issues.length) * 100
     );
     const resRate = Math.round(
-        (mockIssues.filter((i) => i.status === 'Resolved').length / mockIssues.length) * 100
+        (issues.filter((i) => i.status === 'Resolved').length / issues.length) * 100
     );
-    const highPriority = mockIssues.filter(
+    const highPriority = issues.filter(
         (i) => i.severity === 'Critical' || i.severity === 'High'
     ).length;
 
@@ -272,6 +274,8 @@ export default function MPDashboard() {
                 <IssueDetailDrawer
                     issue={selectedIssue}
                     onClose={() => setSelectedIssueId(null)}
+                    isUpvoted={selectedIssue ? isUpvoted(selectedIssue.id) : false}
+                    onUpvote={() => selectedIssue && toggleUpvote(selectedIssue.id)}
                 />
             )}
         </div>

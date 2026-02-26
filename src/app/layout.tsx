@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Playfair_Display, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { RoleProvider } from '@/context/RoleContext';
+import { DataStoreProvider } from '@/context/DataStoreContext';
 import Navigation from '@/components/Navigation';
 
 const playfair = Playfair_Display({
@@ -42,8 +43,10 @@ export default function RootLayout({
         >
             <body className="bg-background text-primary-text font-body antialiased min-h-screen">
                 <RoleProvider>
-                    <Navigation />
-                    <main className="pt-[72px]">{children}</main>
+                    <DataStoreProvider>
+                        <Navigation />
+                        <main className="pt-[72px]">{children}</main>
+                    </DataStoreProvider>
                 </RoleProvider>
             </body>
         </html>

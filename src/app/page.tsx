@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import {
-    mockIssues, Status, Sector, SECTORS, SECTOR_COLORS,
+    Status, Sector, SECTORS, SECTOR_COLORS,
     STATUS_COLORS, STATUSES,
 } from '@/lib/mockData';
+import { useDataStore } from '@/context/DataStoreContext';
 import IssueCard from '@/components/IssueCard';
 import IssueDetailDrawer from '@/components/IssueDetailDrawer';
 import FilterBar from '@/components/FilterBar';
@@ -12,50 +13,43 @@ import ReportModal from '@/components/ReportModal';
 import EmptyState from '@/components/EmptyState';
 
 export default function IssueTracker() {
+    const { issues, toggleUpvote, isUpvoted, upvotedIds } = useDataStore();
     const [activeFilter, setActiveFilter] = useState<Status | 'All'>('All');
     const [activeSector, setActiveSector] = useState<Sector | null>(null);
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
-    const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set());
     const [showReportModal, setShowReportModal] = useState(false);
 
     const filteredIssues = useMemo(() => {
-        return mockIssues.filter((issue) => {
+        return issues.filter((issue) => {
             if (activeFilter !== 'All' && issue.status !== activeFilter) return false;
             if (activeSector && issue.sector !== activeSector) return false;
             return true;
         });
-    }, [activeFilter, activeSector]);
+    }, [issues, activeFilter, activeSector]);
 
-    const selectedIssue = mockIssues.find((i) => i.id === selectedIssueId) || null;
+    const selectedIssue = issues.find((i) => i.id === selectedIssueId) || null;
 
     // Status counts
     const statusCounts = useMemo(() => {
-        const counts: Record<string, number> = { All: mockIssues.length };
+        const counts: Record<string, number> = { All: issues.length };
         STATUSES.forEach((s) => {
-            counts[s] = mockIssues.filter((i) => i.status === s).length;
+            counts[s] = issues.filter((i) => i.status === s).length;
         });
         return counts;
-    }, []);
+    }, [issues]);
 
     // Sector breakdown
     const sectorBreakdown = useMemo(() => {
         const counts: Record<string, number> = {};
         SECTORS.forEach((s) => {
-            counts[s] = mockIssues.filter((i) => i.sector === s).length;
+            counts[s] = issues.filter((i) => i.sector === s).length;
         });
         return counts;
-    }, []);
+    }, [issues]);
 
     const maxSectorCount = Math.max(...Object.values(sectorBreakdown));
 
-    const handleUpvote = (id: string) => {
-        setUpvotedIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
-    };
+
 
     return (
         <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-6">
@@ -100,9 +94,9 @@ export default function IssueTracker() {
                                     key={issue.id}
                                     issue={issue}
                                     onClick={() => setSelectedIssueId(issue.id)}
-                                    onUpvote={() => handleUpvote(issue.id)}
-                                    isUpvoted={upvotedIds.has(issue.id)}
-                                    upvoteBoost={upvotedIds.has(issue.id) ? 1 : 0}
+                                    onUpvote={() => toggleUpvote(issue.id)}
+                                    isUpvoted={isUpvoted(issue.id)}
+                                    upvoteBoost={isUpvoted(issue.id) ? 1 : 0}
                                 />
                             ))}
                         </div>
@@ -194,8 +188,8 @@ export default function IssueTracker() {
                 <IssueDetailDrawer
                     issue={selectedIssue}
                     onClose={() => setSelectedIssueId(null)}
-                    isUpvoted={selectedIssue ? upvotedIds.has(selectedIssue.id) : false}
-                    onUpvote={() => selectedIssue && handleUpvote(selectedIssue.id)}
+                    isUpvoted={selectedIssue ? isUpvoted(selectedIssue.id) : false}
+                    onUpvote={() => selectedIssue && toggleUpvote(selectedIssue.id)}
                 />
             )}
 

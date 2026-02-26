@@ -7,6 +7,7 @@ import {
     STATUS_COLORS, SEVERITY_COLORS, SECTOR_COLORS, SECTOR_EMOJIS,
     formatDate, getTimeAgo,
 } from '@/lib/mockData';
+import { useDataStore } from '@/context/DataStoreContext';
 import { useRole } from '@/context/RoleContext';
 import StatusPill from './StatusPill';
 import SeverityPill from './SeverityPill';
@@ -25,6 +26,7 @@ interface IssueDetailDrawerProps {
 }
 
 export default function IssueDetailDrawer({ issue, onClose, isUpvoted = false, onUpvote }: IssueDetailDrawerProps) {
+    const { addComment: ctxAddComment, updateIssue } = useDataStore();
     const { role } = useRole();
     const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'manage'>('details');
     const [newComment, setNewComment] = useState('');
@@ -226,6 +228,18 @@ export default function IssueDetailDrawer({ issue, onClose, isUpvoted = false, o
                                 <div className="flex justify-end">
                                     <button
                                         disabled={!newComment.trim()}
+                                        onClick={() => {
+                                            if (!newComment.trim() || !issue) return;
+                                            ctxAddComment(issue.id, {
+                                                author: role === 'mp' ? 'MP Office' : 'You',
+                                                avatar: role === 'mp' ? 'MP' : 'YO',
+                                                content: newComment.trim(),
+                                                timestamp: new Date().toISOString(),
+                                                likes: 0,
+                                                isMPOffice: role === 'mp',
+                                            });
+                                            setNewComment('');
+                                        }}
                                         className={`btn-primary text-xs ${!newComment.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                                     >
                                         Post
@@ -340,6 +354,19 @@ export default function IssueDetailDrawer({ issue, onClose, isUpvoted = false, o
                                         />
                                         <button
                                             disabled={!officialResponse.trim()}
+                                            onClick={() => {
+                                                if (!officialResponse.trim() || !issue) return;
+                                                ctxAddComment(issue.id, {
+                                                    author: 'MP Office',
+                                                    avatar: 'MP',
+                                                    content: officialResponse.trim(),
+                                                    timestamp: new Date().toISOString(),
+                                                    likes: 0,
+                                                    isMPOffice: true,
+                                                });
+                                                setOfficialResponse('');
+                                                setShowResponseField(false);
+                                            }}
                                             className={`btn-primary w-full text-xs ${!officialResponse.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                                             style={{ backgroundColor: '#1E3A8A' }}
                                         >
@@ -347,6 +374,24 @@ export default function IssueDetailDrawer({ issue, onClose, isUpvoted = false, o
                                         </button>
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Save Changes */}
+                            <div>
+                                <button
+                                    onClick={() => {
+                                        if (!issue) return;
+                                        updateIssue(issue.id, {
+                                            status,
+                                            severity,
+                                            assignedTo: assignee || undefined,
+                                            internalNotes: internalNote || undefined,
+                                        });
+                                    }}
+                                    className="btn-primary w-full text-xs"
+                                >
+                                    Save Changes
+                                </button>
                             </div>
 
                             {/* Escalate */}

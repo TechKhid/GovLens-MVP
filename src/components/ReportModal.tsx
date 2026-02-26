@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Sector, SECTORS, SECTOR_COLORS, ZONES } from '@/lib/mockData';
+import { Sector, SECTORS, SECTOR_COLORS, ZONES, Issue } from '@/lib/mockData';
+import { useDataStore } from '@/context/DataStoreContext';
 
 const PinLocationMap = dynamic(() => import('./PinLocationMap'), {
     ssr: false,
@@ -15,6 +16,7 @@ interface ReportModalProps {
 }
 
 export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
+    const { addIssue } = useDataStore();
     const [step, setStep] = useState(1);
     const [title, setTitle] = useState('');
     const [sector, setSector] = useState<Sector | null>(null);
@@ -297,7 +299,34 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                 <div className="px-6 py-4 border-t border-border">
                     {step < 4 ? (
                         <button
-                            onClick={() => setStep(step + 1)}
+                            onClick={() => {
+                                if (step === 3) {
+                                    // Build and submit the issue
+                                    const now = new Date().toISOString();
+                                    addIssue({
+                                        title,
+                                        description: description || title,
+                                        sector: sector!,
+                                        zone: zone || 'Dzorwulu',
+                                        status: 'Reported',
+                                        severity: 'Medium',
+                                        reporter: { name: 'You', avatar: 'YO' },
+                                        photos,
+                                        location: {
+                                            address: address || 'Ayawaso West Wuogon',
+                                            gps: { lat: pinLat, lng: pinLng },
+                                        },
+                                        submittedAt: now,
+                                        upvotes: 0,
+                                        comments: [],
+                                        affectedResidents: 0,
+                                        timeline: [
+                                            { status: 'Reported', date: now },
+                                        ],
+                                    });
+                                }
+                                setStep(step + 1);
+                            }}
                             disabled={!canProceed()}
                             className={`btn-primary w-full ${!canProceed() ? 'opacity-40 cursor-not-allowed' : ''}`}
                         >

@@ -3,9 +3,10 @@
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import {
-    mockIssues, mockZones, ZoneData, SEVERITY_COLORS,
+    ZoneData, SEVERITY_COLORS,
     getZoneSeverity, STATUS_COLORS,
 } from '@/lib/mockData';
+import { useDataStore } from '@/context/DataStoreContext';
 import StatusPill from '@/components/StatusPill';
 import SectorTag from '@/components/SectorTag';
 import IssueDetailDrawer from '@/components/IssueDetailDrawer';
@@ -25,16 +26,17 @@ const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
 });
 
 export default function HeatmapPage() {
+    const { issues, zones, toggleUpvote, isUpvoted } = useDataStore();
     const [selectedZone, setSelectedZone] = useState<ZoneData | null>(null);
     const [hoveredZone, setHoveredZone] = useState<string | null>(null);
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
 
-    const selectedIssue = mockIssues.find((i) => i.id === selectedIssueId) || null;
+    const selectedIssue = issues.find((i) => i.id === selectedIssueId) || null;
 
     const zoneIssues = useMemo(() => {
         if (!selectedZone) return [];
-        return mockIssues.filter((i) => i.zone === selectedZone.name);
-    }, [selectedZone]);
+        return issues.filter((i) => i.zone === selectedZone.name);
+    }, [selectedZone, issues]);
 
     const severityLegend = [
         { label: 'Low (< 35)', color: SEVERITY_COLORS['Low'] },
@@ -56,8 +58,8 @@ export default function HeatmapPage() {
                 {/* Map */}
                 <div className="flex-1 card p-4">
                     <LeafletMap
-                        issues={mockIssues}
-                        zones={mockZones}
+                        issues={issues}
+                        zones={zones}
                         selectedZone={selectedZone}
                         onZoneSelect={setSelectedZone}
                         onIssueSelect={setSelectedIssueId}
@@ -84,7 +86,7 @@ export default function HeatmapPage() {
                                 <h4 className="section-label">Zones by Issue Count</h4>
                             </div>
                             <div className="divide-y divide-border">
-                                {[...mockZones]
+                                {[...zones]
                                     .sort((a, b) => b.issueCount - a.issueCount)
                                     .map((zone) => {
                                         const severity = getZoneSeverity(zone.issueCount);
@@ -171,6 +173,8 @@ export default function HeatmapPage() {
                 <IssueDetailDrawer
                     issue={selectedIssue}
                     onClose={() => setSelectedIssueId(null)}
+                    isUpvoted={selectedIssue ? isUpvoted(selectedIssue.id) : false}
+                    onUpvote={() => selectedIssue && toggleUpvote(selectedIssue.id)}
                 />
             )}
         </div>

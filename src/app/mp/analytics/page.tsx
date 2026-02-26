@@ -1,21 +1,24 @@
 'use client';
 
 import {
-    mockIssues, mockZones, SECTORS, SECTOR_COLORS, SEVERITY_COLORS,
+    SECTORS, SECTOR_COLORS, SEVERITY_COLORS,
     Sector, getZoneSeverity,
 } from '@/lib/mockData';
+import { useDataStore } from '@/context/DataStoreContext';
 import StatCard from '@/components/StatCard';
 
 export default function AnalyticsPage() {
+    const { issues, zones } = useDataStore();
+
     // Sector distribution
     const sectorCounts: Record<string, number> = {};
     SECTORS.forEach((s) => {
-        sectorCounts[s] = mockIssues.filter((i) => i.sector === s).length;
+        sectorCounts[s] = issues.filter((i) => i.sector === s).length;
     });
     const maxSectorCount = Math.max(...Object.values(sectorCounts));
 
     // Zone performance
-    const zonePerformance = mockZones.map((z) => ({
+    const zonePerformance = zones.map((z) => ({
         name: z.name,
         total: z.issueCount,
         resolved: z.resolvedCount,
@@ -80,16 +83,16 @@ export default function AnalyticsPage() {
 
             {/* Top stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <StatCard label="Total Issues" value={mockIssues.length} color="#111111" />
+                <StatCard label="Total Issues" value={issues.length} color="#111111" />
                 <StatCard
                     label="Resolution Rate"
-                    value={`${Math.round((mockIssues.filter((i) => i.status === 'Resolved').length / mockIssues.length) * 100)}%`}
+                    value={`${Math.round((issues.filter((i) => i.status === 'Resolved').length / issues.length) * 100)}%`}
                     color="#2E7D32"
                 />
                 <StatCard label="Avg Response" value="3.2d" color="#F5A623" />
                 <StatCard
                     label="Critical Issues"
-                    value={mockIssues.filter((i) => i.severity === 'Critical').length}
+                    value={issues.filter((i) => i.severity === 'Critical').length}
                     color="#C62828"
                 />
             </div>
