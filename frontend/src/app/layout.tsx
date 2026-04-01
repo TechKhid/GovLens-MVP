@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
-import { RoleProvider } from '@/context/RoleContext';
+import { AuthProvider } from '@/context/RoleContext';
 import { DataStoreProvider } from '@/context/DataStoreContext';
 import Navigation from '@/components/Navigation';
 import { Analytics } from '@vercel/analytics/next';
+import MainWrapper from '@/components/MainWrapper';
 
 const playfair = Playfair_Display({
     subsets: ['latin'],
@@ -43,14 +44,15 @@ export default function RootLayout({
             className={`${playfair.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}
         >
             <body className="bg-background text-primary-text font-body antialiased min-h-screen">
-                <RoleProvider>
+                <AuthProvider>
                     <DataStoreProvider>
                         <Navigation />
-                        <main className="pt-[72px]">{children}</main>
+                        <MainWrapper>{children}</MainWrapper>
                     </DataStoreProvider>
-                </RoleProvider>
+                </AuthProvider>
                 <Analytics />
             </body>
         </html>
     );
 }
+

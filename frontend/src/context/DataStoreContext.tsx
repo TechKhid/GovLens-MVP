@@ -1,87 +1,167 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import {
-    Issue, Comment, BriefingPost, Sector, Status, Severity,
-    mockIssues, mockBriefings, mockZones, ZoneData, ZONES,
+    createContext,
+    useContext,
+    useState,
+    useCallback,
+    useMemo,
+    useEffect,
+    ReactNode,
+} from 'react';
+import { api } from '@/lib/api';
+import {
+    Issue, Comment, BriefingPost, ZoneData, mockZones,
 } from '@/lib/mockData';
 
-// ── Context shape ──────────────────────────────────────────────
+// ── API response types (snake_case from Go backend) ────────────────────────
+
+interface ApiIssue {
+    id: string;
+    user_id: string;
+    title: string;
+    description: string;
+    status: string;
+    sector?: string | null;
+    severity?: string | null;
+    zone?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    upvotes?: number | null;
+    created_at: string;
+    updated_at: string;
+    // present when fetched with upvote check
+    has_upvoted?: boolean;
+}
+
+interface ApiIssueWithUpvote extends ApiIssue {
+    has_upvoted: boolean;
+}
+
+// Map an API issue to the local Issue shape used by all components.
+function mapApiIssue(a: ApiIssue): Issue {
+    return {
+        id: a.id,
+        title: a.title,
+        description: a.description,
+        sector: (a.sector ?? 'Other') as Issue['sector'],
+        zone: a.zone ?? '',
+        status: mapStatus(a.status),
+        severity: (a.severity ?? 'Medium') as Issue['severity'],
+        reporter: { name: 'Citizen', avatar: '' },
+        photos: [],
+        location: {
+            address: a.zone ?? '',
+            gps: { lat: a.lat ?? 0, lng: a.lng ?? 0 },
+        },
+        submittedAt: a.created_at,
+        upvotes: a.upvotes ?? 0,
+        comments: [],
+        affectedResidents: 0,
+        timeline: [{ status: mapStatus(a.status), date: a.created_at }],
+    };
+}
+
+function mapStatus(s: string): Issue['status'] {
+    const map: Record<string, Issue['status']> = {
+        open: 'Reported',
+        'in-progress': 'In Progress',
+        resolved: 'Resolved',
+        acknowledged: 'Acknowledged',
+        escalated: 'Escalated',
+    };
+    return map[s] ?? 'Reported';
+}
+
+// ── Context shape ──────────────────────────────────────────────────────────
 
 interface DataStoreContextType {
-    // Data
     issues: Issue[];
     briefings: BriefingPost[];
     zones: ZoneData[];
     upvotedIds: Set<string>;
+    loading: boolean;
 
-    // Issue actions
-    addIssue: (issue: Omit<Issue, 'id'>) => string;
+    addIssue: (issue: Omit<Issue, 'id'> & { lat?: number; lng?: number }) => Promise<string>;
     updateIssue: (id: string, patch: Partial<Issue>) => void;
     addComment: (issueId: string, comment: Omit<Comment, 'id'>) => void;
-    toggleUpvote: (id: string) => void;
+    toggleUpvote: (id: string) => Promise<void>;
     isUpvoted: (id: string) => boolean;
+    refreshIssues: () => Promise<void>;
 
-    // Briefing actions
     addBriefing: (post: Omit<BriefingPost, 'id'>) => string;
-
-    // ID generation
     nextIssueId: () => string;
     nextBriefingId: () => string;
 }
 
 const DataStoreContext = createContext<DataStoreContextType | undefined>(undefined);
 
-// ── Provider ───────────────────────────────────────────────────
+// ── Provider ───────────────────────────────────────────────────────────────
 
 export function DataStoreProvider({ children }: { children: ReactNode }) {
-    const [issues, setIssues] = useState<Issue[]>(() => [...mockIssues]);
-    const [briefings, setBriefings] = useState<BriefingPost[]>(() => [...mockBriefings]);
+    const [issues, setIssues] = useState<Issue[]>([]);
+    const [briefings, setBriefings] = useState<BriefingPost[]>([]);
     const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set());
-    const [issueCounter, setIssueCounter] = useState(mockIssues.length);
-    const [briefingCounter, setBriefingCounter] = useState(mockBriefings.length);
+    const [loading, setLoading] = useState(true);
+    const [briefingCounter, setBriefingCounter] = useState(0);
 
-    // --- ID generators ---
+    // ── Fetch issues from the API ──────────────────────────────────────────
 
-    const nextIssueId = useCallback(() => {
-        let id = '';
-        setIssueCounter((c) => {
-            const next = c + 1;
-            id = `GL-${String(next).padStart(3, '0')}`;
-            return next;
-        });
-        return id;
+    const refreshIssues = useCallback(async () => {
+        setLoading(true);
+        try {
+            const data = await api.get<ApiIssue[] | ApiIssueWithUpvote[]>('/issues');
+            const mapped = data.map(mapApiIssue);
+            setIssues(mapped);
+
+            // Populate initial upvotedIds from the has_upvoted field (authed fetch)
+            const upvoted = new Set<string>();
+            data.forEach((d) => {
+                if ('has_upvoted' in d && (d as ApiIssueWithUpvote).has_upvoted) {
+                    upvoted.add(d.id);
+                }
+            });
+            setUpvotedIds(upvoted);
+        } catch (err) {
+            console.error('Failed to fetch issues:', err);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    const nextBriefingId = useCallback(() => {
-        let id = '';
-        setBriefingCounter((c) => {
-            const next = c + 1;
-            id = `B-${String(next).padStart(3, '0')}`;
-            return next;
-        });
-        return id;
-    }, []);
+    useEffect(() => {
+        refreshIssues();
+    }, [refreshIssues]);
 
-    // --- Issue actions ---
+    // ── Issue actions ──────────────────────────────────────────────────────
 
-    const addIssue = useCallback((issueData: Omit<Issue, 'id'>): string => {
-        let id = '';
-        setIssueCounter((c) => {
-            const next = c + 1;
-            id = `GL-${String(next).padStart(3, '0')}`;
-            return next;
-        });
-        // Use a ref-stable setter so we don't depend on issueCounter
-        setIssues((prev) => [{ ...issueData, id: id || `GL-${String(prev.length + 1).padStart(3, '0')}` }, ...prev]);
-        return id;
-    }, []);
+    const addIssue = useCallback(
+        async (issueData: Omit<Issue, 'id'> & { lat?: number; lng?: number }): Promise<string> => {
+            const body = {
+                title: issueData.title,
+                description: issueData.description,
+                zone: issueData.zone ?? '',
+                sector: issueData.sector,
+                severity: issueData.severity,
+                lat: issueData.lat ?? issueData.location?.gps?.lat ?? 0,
+                lng: issueData.lng ?? issueData.location?.gps?.lng ?? 0,
+            };
+            try {
+                const created = await api.post<ApiIssue>('/issues', body);
+                const mapped = mapApiIssue(created);
+                setIssues((prev) => [mapped, ...prev]);
+                return created.id;
+            } catch (err) {
+                console.error('Failed to create issue:', err);
+                throw err;
+            }
+        },
+        []
+    );
 
     const updateIssue = useCallback((id: string, patch: Partial<Issue>) => {
         setIssues((prev) =>
-            prev.map((issue) =>
-                issue.id === id ? { ...issue, ...patch } : issue
-            )
+            prev.map((issue) => (issue.id === id ? { ...issue, ...patch } : issue))
         );
     }, []);
 
@@ -97,16 +177,16 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
         );
     }, []);
 
-    // --- Upvote ---
+    // ── Upvote — optimistic UI + API call ─────────────────────────────────
 
-    const toggleUpvote = useCallback((id: string) => {
+    const toggleUpvote = useCallback(async (id: string) => {
+        // Optimistic update
         setUpvotedIds((prev) => {
             const next = new Set(prev);
             const wasUpvoted = next.has(id);
             if (wasUpvoted) next.delete(id);
             else next.add(id);
 
-            // Also update the issue's upvotes count
             setIssues((prevIssues) =>
                 prevIssues.map((issue) =>
                     issue.id === id
@@ -114,14 +194,34 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
                         : issue
                 )
             );
-
             return next;
         });
+
+        // Persist to backend
+        try {
+            await api.post(`/issues/${id}/upvote`);
+        } catch (err) {
+            console.error('Upvote failed:', err);
+            // Revert on failure
+            setUpvotedIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                setIssues((prevIssues) =>
+                    prevIssues.map((issue) =>
+                        issue.id === id
+                            ? { ...issue, upvotes: issue.upvotes + (next.has(id) ? 1 : -1) }
+                            : issue
+                    )
+                );
+                return next;
+            });
+        }
     }, []);
 
     const isUpvoted = useCallback((id: string) => upvotedIds.has(id), [upvotedIds]);
 
-    // --- Briefing actions ---
+    // ── Briefing actions (still local until backend supports them) ──────────
 
     const addBriefing = useCallback((postData: Omit<BriefingPost, 'id'>): string => {
         let id = '';
@@ -130,26 +230,49 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
             id = `B-${String(next).padStart(3, '0')}`;
             return next;
         });
-        setBriefings((prev) => [{ ...postData, id: id || `B-${String(prev.length + 1).padStart(3, '0')}` }, ...prev]);
+        setBriefings((prev) => [
+            { ...postData, id: id || `B-${String(prev.length + 1).padStart(3, '0')}` },
+            ...prev,
+        ]);
         return id;
     }, []);
 
-    // --- Memoized value ---
+    const nextIssueId = useCallback(() => `GL-new-${Date.now()}`, []);
+    const nextBriefingId = useCallback(() => {
+        let id = '';
+        setBriefingCounter((c) => {
+            const next = c + 1;
+            id = `B-${String(next).padStart(3, '0')}`;
+            return next;
+        });
+        return id;
+    }, []);
 
-    const value = useMemo<DataStoreContextType>(() => ({
-        issues,
-        briefings,
-        zones: mockZones,
-        upvotedIds,
-        addIssue,
-        updateIssue,
-        addComment,
-        toggleUpvote,
-        isUpvoted,
-        addBriefing,
-        nextIssueId,
-        nextBriefingId,
-    }), [issues, briefings, upvotedIds, addIssue, updateIssue, addComment, toggleUpvote, isUpvoted, addBriefing, nextIssueId, nextBriefingId]);
+    // ── Memoized context value ─────────────────────────────────────────────
+
+    const value = useMemo<DataStoreContextType>(
+        () => ({
+            issues,
+            briefings,
+            zones: mockZones,
+            upvotedIds,
+            loading,
+            addIssue,
+            updateIssue,
+            addComment,
+            toggleUpvote,
+            isUpvoted,
+            refreshIssues,
+            addBriefing,
+            nextIssueId,
+            nextBriefingId,
+        }),
+        [
+            issues, briefings, upvotedIds, loading,
+            addIssue, updateIssue, addComment, toggleUpvote,
+            isUpvoted, refreshIssues, addBriefing, nextIssueId, nextBriefingId,
+        ]
+    );
 
     return (
         <DataStoreContext.Provider value={value}>
@@ -158,7 +281,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     );
 }
 
-// ── Hook ───────────────────────────────────────────────────────
+// ── Hook ───────────────────────────────────────────────────────────────────
 
 export function useDataStore() {
     const context = useContext(DataStoreContext);
