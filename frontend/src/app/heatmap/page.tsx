@@ -7,6 +7,7 @@ import {
     getZoneSeverity, STATUS_COLORS,
 } from '@/lib/mockData';
 import { useDataStore } from '@/context/DataStoreContext';
+import { useAuth } from '@/context/RoleContext';
 import StatusPill from '@/components/StatusPill';
 import SectorTag from '@/components/SectorTag';
 import IssueDetailDrawer from '@/components/IssueDetailDrawer';
@@ -26,6 +27,7 @@ const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
 });
 
 export default function HeatmapPage() {
+    const { user } = useAuth();
     const { issues, zones, toggleUpvote, isUpvoted } = useDataStore();
     const [selectedZone, setSelectedZone] = useState<ZoneData | null>(null);
     const [hoveredZone, setHoveredZone] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export default function HeatmapPage() {
             <div className="mb-5">
                 <h1 className="font-display text-2xl font-bold">Constituency Heatmap</h1>
                 <p className="text-sm text-muted-text font-body mt-1">
-                    Issue density and severity across Ayawaso West Wuogon zones
+                    Issue density and severity across {user?.constituency || 'Ghana'} zones
                 </p>
             </div>
 
@@ -63,6 +65,7 @@ export default function HeatmapPage() {
                         selectedZone={selectedZone}
                         onZoneSelect={setSelectedZone}
                         onIssueSelect={setSelectedIssueId}
+                        constituency={user?.constituency ?? ''}
                     />
 
                     {/* Legend */}
@@ -85,30 +88,38 @@ export default function HeatmapPage() {
                             <div className="px-4 py-3 border-b border-border">
                                 <h4 className="section-label">Zones by Issue Count</h4>
                             </div>
-                            <div className="divide-y divide-border">
-                                {[...zones]
-                                    .sort((a, b) => b.issueCount - a.issueCount)
-                                    .map((zone) => {
-                                        const severity = getZoneSeverity(zone.issueCount);
-                                        const color = SEVERITY_COLORS[severity];
-                                        return (
-                                            <button
-                                                key={zone.id}
-                                                onClick={() => setSelectedZone(zone)}
-                                                className="w-full px-4 py-3 flex items-center justify-between hover:bg-background transition-colors cursor-pointer text-left"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                                                    <span className="text-sm font-body">{zone.name}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-mono text-muted-text">{zone.issueCount}</span>
-                                                    <span className="text-muted-text text-xs">›</span>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                            </div>
+                            {zones.length === 0 ? (
+                                <div className="px-4 py-8">
+                                    <EmptyState message="No issues have been reported in this constituency yet." />
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-border">
+                                    {[...zones]
+                                        .sort((a, b) => b.issueCount - a.issueCount)
+                                        .map((zone) => {
+                                            const severity = getZoneSeverity(zone.issueCount);
+                                            const color = SEVERITY_COLORS[severity];
+                                            return (
+                                                <button
+                                                    key={zone.id}
+                                                    onClick={() => setSelectedZone(zone)}
+                                                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-background transition-colors cursor-pointer text-left"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+                                                            <circle cx="5" cy="5" r="5" fill={color} />
+                                                        </svg>
+                                                        <span className="text-sm font-body">{zone.name}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-mono text-muted-text">{zone.issueCount}</span>
+                                                        <span className="text-muted-text text-xs">›</span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                </div>
+                            )}
                         </div>
                     ) : (
                         /* Zone selected */

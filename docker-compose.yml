@@ -59,6 +59,18 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  seed:
+    image: postgres:16-alpine
+    volumes:
+      - ./backend/seed.sql:/seed.sql:ro
+    command: psql postgres://govlens:password@postgres:5432/govlens -f /seed.sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: on-failure
+
   go-api:
     build:
       context: ./backend
@@ -80,6 +92,8 @@ services:
       nats:
         condition: service_started
       migrate:
+        condition: service_completed_successfully
+      seed:
         condition: service_completed_successfully
     restart: unless-stopped
 

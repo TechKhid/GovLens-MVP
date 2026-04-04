@@ -3,105 +3,25 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '@/context/RoleContext';
 
-// ── Authentic Adinkra symbol SVGs from Wikimedia Commons ─────────────────────
-// These are the real, canonical vector images of each Adinkra symbol.
-const ADINKRA_SYMBOLS = [
-    {
-        name: 'Gye Nyame',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Adinkra_Gye_Nyame.svg',
-    },
-    {
-        name: 'Sankofa',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Adinkra_Sankofa.svg',
-    },
-    {
-        name: 'Dwennimmen',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Adinkra_Dwennimmen.svg',
-    },
-    {
-        name: 'Akoma',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Adinkra_Akoma.svg',
-    },
-    {
-        name: 'Aya',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/7/76/Adinkra_Aya.svg',
-    },
-    {
-        name: 'Adinkrahene',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Adinkra_Adinkrahene.svg',
-    },
-    {
-        name: 'Nyame Biribi Wo Soro',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Adinkra_Nyame_Biribi_Wo_Soro.svg',
-    },
-    {
-        name: 'Fawohodie',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Adinkra_Fawohodie.svg',
-    },
-    {
-        name: 'Nkyinkyim',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/6/61/Adinkra_Nkyinkyim.svg',
-    },
-    {
-        name: 'Ese Ne Tekrema',
-        url: 'https://upload.wikimedia.org/wikipedia/commons/f/f4/Adinkra_Ese_Ne_Tekrema.svg',
-    },
-];
-
-interface PlacedSymbol {
-    url: string;
-    name: string;
-    x: number;
-    y: number;
-    size: number;
-    opacity: number;
-    rotate: number;
-}
+// ── Adinkra tiled background ──────────────────────────────────────────────────
 
 function AdinkraBackground() {
-    const [symbols, setSymbols] = useState<PlacedSymbol[]>([]);
-
-    useEffect(() => {
-        const placed: PlacedSymbol[] = [];
-        for (let i = 0; i < 28; i++) {
-            const sym = ADINKRA_SYMBOLS[i % ADINKRA_SYMBOLS.length];
-            placed.push({
-                ...sym,
-                x: Math.random() * 100,
-                y: Math.random() * 100,
-                size: 36 + Math.random() * 56,
-                opacity: 0.04 + Math.random() * 0.07,
-                rotate: Math.round(Math.random() * 4) * 90, // 0 / 90 / 180 / 270
-            });
-        }
-        setSymbols(placed);
-    }, []);
-
     return (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden>
-            {symbols.map((s, i) => (
-                <Image
-                    key={i}
-                    src={s.url}
-                    alt=""
-                    width={s.size}
-                    height={s.size}
-                    unoptimized
-                    className="absolute brightness-0"
-                    style={{
-                        left: `${s.x}%`,
-                        top: `${s.y}%`,
-                        width: s.size,
-                        height: s.size,
-                        opacity: s.opacity,
-                        transform: `rotate(${s.rotate}deg)`,
-                    }}
-                />
-            ))}
-        </div>
+        <div
+            aria-hidden
+            className="absolute pointer-events-none select-none"
+            style={{
+                inset: '-20%',           // oversized so rotated edges don't show gaps
+                backgroundImage: 'url(/adinkra.png)',
+                backgroundSize: '680px auto',
+                backgroundRepeat: 'repeat',
+                opacity: 0.15,
+                mixBlendMode: 'multiply',
+                transform: 'rotate(8deg)',
+            }}
+        />
     );
 }
 
@@ -171,7 +91,7 @@ function LoginForm() {
                     </div>
                     <div>
                         <p className="font-display text-xl font-bold text-primary-text leading-none">GovLens</p>
-                        <p className="text-xs text-muted-text font-body mt-0.5">Ayawaso West Wuogon</p>
+                        <p className="text-xs text-muted-text font-body mt-0.5 italic">See it. Report it. Resolve it.</p>
                     </div>
                 </div>
 
@@ -257,6 +177,16 @@ function LoginForm() {
                     Continue as guest (Citizen view)
                 </button>
 
+                {/* Sign up link */}
+                <div className="text-center mt-6">
+                    <p className="text-sm text-muted-text font-body">
+                        Don't have an account?{' '}
+                        <Link href="/register" className="text-primary-text font-medium hover:underline transition-colors">
+                            Sign up
+                        </Link>
+                    </p>
+                </div>
+
                 {/* Dev helper */}
                 <div className="mt-6 p-3 bg-background border border-border">
                     <p className="section-label mb-2">Development — test accounts</p>
@@ -268,11 +198,14 @@ function LoginForm() {
                 </div>
             </div>
 
-            <p className="relative mt-6 text-xs text-muted-text font-body z-10">
-                <Link href="/" className="hover:text-primary-text transition-colors">
+            <div className="relative mt-6 z-10">
+                <Link
+                    href="/"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-border text-sm font-body text-primary-text hover:bg-primary-text hover:text-white transition-colors shadow-sm"
+                >
                     ← Back to public site
                 </Link>
-            </p>
+            </div>
         </div>
     );
 }

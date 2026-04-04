@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Sector, SECTORS, SECTOR_COLORS, ZONES, Issue } from '@/lib/mockData';
+import { Sector, SECTORS, SECTOR_COLORS, Issue } from '@/lib/mockData';
 import { useDataStore } from '@/context/DataStoreContext';
+import { useAuth } from '@/context/RoleContext';
+import { getConstituencyCenter } from '@/lib/constituency-centers';
 
 const PinLocationMap = dynamic(() => import('./PinLocationMap'), {
     ssr: false,
@@ -15,17 +17,32 @@ interface ReportModalProps {
     onClose: () => void;
 }
 
+// Ghana center — overridden by constituency on open
+const GHANA_LAT = 7.9465;
+const GHANA_LNG = -1.0232;
+
 export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
     const { addIssue } = useDataStore();
+    const { user } = useAuth();
     const [step, setStep] = useState(1);
     const [title, setTitle] = useState('');
     const [sector, setSector] = useState<Sector | null>(null);
     const [description, setDescription] = useState('');
     const [address, setAddress] = useState('');
     const [zone, setZone] = useState('');
-    const [pinLat, setPinLat] = useState(5.6150);
-    const [pinLng, setPinLng] = useState(-0.1900);
+    const [pinLat, setPinLat] = useState(GHANA_LAT);
+    const [pinLng, setPinLng] = useState(GHANA_LNG);
     const [photos, setPhotos] = useState<string[]>([]);
+
+    // Fly map pin to the user's constituency center when the modal opens
+    useEffect(() => {
+        if (!isOpen || !user?.constituency) return;
+        const entry = getConstituencyCenter(user.constituency);
+        if (entry) {
+            setPinLat(entry.lat);
+            setPinLng(entry.lng);
+        }
+    }, [isOpen, user?.constituency]);
 
     if (!isOpen) return null;
 
@@ -65,8 +82,10 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
         setAddress('');
         setZone('');
         setPhotos([]);
-        setPinLat(5.6150);
-        setPinLng(-0.1900);
+        // Reset to constituency center (or Ghana center if unknown)
+        const entry = user?.constituency ? getConstituencyCenter(user.constituency) : null;
+        setPinLat(entry?.lat ?? GHANA_LAT);
+        setPinLng(entry?.lng ?? GHANA_LNG);
         onClose();
     };
 
@@ -184,17 +203,15 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                             </div>
 
                             <div>
-                                <label className="section-label block mb-1.5">Zone</label>
-                                <select
+                                <label className="section-label block mb-1.5">Zone / Area <span className="text-muted-text font-normal">(optional)</span></label>
+                                <input
+                                    type="text"
                                     value={zone}
                                     onChange={(e) => setZone(e.target.value)}
+                                    placeholder="e.g. Nkonya Ahenkro, Market Area…"
                                     className="input-field"
-                                >
-                                    <option value="">Select zone</option>
-                                    {ZONES.map((z) => (
-                                        <option key={z} value={z}>{z}</option>
-                                    ))}
-                                </select>
+                                />
+                                <p className="text-[10px] text-muted-text font-body mt-1">Enter any local area, neighbourhood or landmark name</p>
                             </div>
 
                             <div>
@@ -307,13 +324,13 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                                         title,
                                         description: description || title,
                                         sector: sector!,
-                                        zone: zone || 'Dzorwulu',
+                                        zone: zone || user?.constituency || '',
                                         status: 'Reported',
                                         severity: 'Medium',
                                         reporter: { name: 'You', avatar: 'YO' },
                                         photos,
                                         location: {
-                                            address: address || 'Ayawaso West Wuogon',
+                                            address: address || user?.constituency || '',
                                             gps: { lat: pinLat, lng: pinLng },
                                         },
                                         submittedAt: now,

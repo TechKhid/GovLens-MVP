@@ -12,10 +12,11 @@
     "@types/leaflet": "^1.9.21",
     "@vercel/analytics": "^1.6.1",
     "leaflet": "^1.9.4",
-    "next": "15.5.12",
+    "next": "^15.5.14",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "swr": "^2.4.1"
   },
   "devDependencies": {
     "@types/node": "22.13.4",

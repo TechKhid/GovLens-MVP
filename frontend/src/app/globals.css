@@ -163,3 +163,12 @@
     font-weight: 600;
     font-size: 13px;
 }
+
+/* ── Login page Adinkra background ──────────────────────────────────────────── */
+.adinkra-bg {
+    background-image: url(/adinkra.png);
+    background-size: 480px auto;
+    background-repeat: repeat;
+    opacity: 0.18;
+    mix-blend-mode: multiply;
+}

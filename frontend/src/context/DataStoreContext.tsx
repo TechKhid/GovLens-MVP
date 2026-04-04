@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { api } from '@/lib/api';
 import {
-    Issue, Comment, BriefingPost, ZoneData, mockZones,
+    Issue, Comment, BriefingPost, ZoneData,
 } from '@/lib/mockData';
 
 // ── API response types (snake_case from Go backend) ────────────────────────
@@ -248,13 +248,32 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
         return id;
     }, []);
 
+    // ── Zones derived from real issues (grouped by zone name) ──────────────
+
+    const zones = useMemo<ZoneData[]>(() => {
+        const acc: Record<string, { issueCount: number; resolvedCount: number }> = {};
+        issues.forEach((issue) => {
+            if (!issue.zone) return;
+            if (!acc[issue.zone]) acc[issue.zone] = { issueCount: 0, resolvedCount: 0 };
+            acc[issue.zone].issueCount += 1;
+            if (issue.status === 'Resolved') acc[issue.zone].resolvedCount += 1;
+        });
+        return Object.entries(acc).map(([name, counts]) => ({
+            id: name.toLowerCase().replace(/\s+/g, '-'),
+            name,
+            issueCount: counts.issueCount,
+            resolvedCount: counts.resolvedCount,
+            x: 0, y: 0, radius: 0, // legacy canvas props, unused
+        }));
+    }, [issues]);
+
     // ── Memoized context value ─────────────────────────────────────────────
 
     const value = useMemo<DataStoreContextType>(
         () => ({
             issues,
             briefings,
-            zones: mockZones,
+            zones,
             upvotedIds,
             loading,
             addIssue,
@@ -268,7 +287,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
             nextBriefingId,
         }),
         [
-            issues, briefings, upvotedIds, loading,
+            issues, briefings, zones, upvotedIds, loading,
             addIssue, updateIssue, addComment, toggleUpvote,
             isUpvoted, refreshIssues, addBriefing, nextIssueId, nextBriefingId,
         ]

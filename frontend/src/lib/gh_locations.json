@@ -1,0 +1,165 @@
+[
+  {
+    "region": "Greater Accra",
+    "municipalities": [
+      {
+        "name": "Accra Metropolitan",
+        "constituencies": [
+          "Ablekuma Central",
+          "Ablekuma North",
+          "Ablekuma South",
+          "Ablekuma West",
+          "Odododiodio",
+          "Okaikwei Central",
+          "Okaikwei North",
+          "Okaikwei South"
+        ]
+      },
+      {
+        "name": "Ayawaso West",
+        "constituencies": [
+          "Ayawaso West Wuogon"
+        ]
+      },
+      {
+        "name": "Ayawaso East",
+        "constituencies": [
+          "Ayawaso East"
+        ]
+      },
+      {
+        "name": "La Dade Kotopon",
+        "constituencies": [
+          "La Dade Kotopon"
+        ]
+      },
+      {
+        "name": "Ledzokuku-Krowor",
+        "constituencies": [
+          "Ledzokuku",
+          "Krowor"
+        ]
+      },
+      {
+        "name": "Tema Metropolitan",
+        "constituencies": [
+          "Tema East",
+          "Tema Central",
+          "Tema West"
+        ]
+      }
+    ]
+  },
+  {
+    "region": "Ashanti",
+    "municipalities": [
+      {
+        "name": "Kumasi Metropolitan",
+        "constituencies": [
+          "Bantama",
+          "Kwadaso",
+          "Manhyia North",
+          "Manhyia South",
+          "Nhyiaeso",
+          "Oforikrom",
+          "Subin",
+          "Suame"
+        ]
+      },
+      {
+        "name": "Asokwa",
+        "constituencies": [
+          "Asokwa"
+        ]
+      },
+      {
+        "name": "Ejisu-Juaben",
+        "constituencies": [
+          "Ejisu",
+          "Juaben"
+        ]
+      }
+    ]
+  },
+  {
+    "region": "Central",
+    "municipalities": [
+      {
+        "name": "Cape Coast Metropolitan",
+        "constituencies": [
+          "Cape Coast North",
+          "Cape Coast South"
+        ]
+      },
+      {
+        "name": "Awutu Senya East",
+        "constituencies": [
+          "Awutu Senya East"
+        ]
+      },
+      {
+        "name": "Mfantseman",
+        "constituencies": [
+          "Mfantseman"
+        ]
+      }
+    ]
+  },
+  {
+    "region": "Western",
+    "municipalities": [
+      {
+        "name": "Sekondi Takoradi Metropolitan",
+        "constituencies": [
+          "Effia",
+          "Kwesimintsim",
+          "Sekondi",
+          "Takoradi"
+        ]
+      },
+      {
+        "name": "Tarkwa-Nsuaem",
+        "constituencies": [
+          "Tarkwa-Nsuaem"
+        ]
+      }
+    ]
+  },
+  {
+    "region": "Volta",
+    "municipalities": [
+      {
+        "name": "Ho Municipal",
+        "constituencies": [
+          "Ho Central",
+          "Ho West"
+        ]
+      },
+      {
+        "name": "Ketu South",
+        "constituencies": [
+          "Ketu South"
+        ]
+      }
+    ]
+  },
+  {
+    "region": "Northern",
+    "municipalities": [
+      {
+        "name": "Tamale Metropolitan",
+        "constituencies": [
+          "Tamale Central",
+          "Tamale North",
+          "Tamale South"
+        ]
+      },
+      {
+        "name": "Sagnarigu",
+        "constituencies": [
+          "Sagnarigu"
+        ]
+      }
+    ]
+  }
+]

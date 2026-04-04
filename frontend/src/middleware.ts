@@ -11,7 +11,7 @@ import type { NextRequest } from 'next/server';
 // ─── Route config ─────────────────────────────────────────────────────────────
 
 /** Routes that don't require authentication */
-const PUBLIC_ROUTES = ['/login', '/api/auth'];
+const PUBLIC_ROUTES = ['/login', '/register', '/api/auth'];
 
 /** Routes accessible only to mp or sysadmin — note the trailing slash to avoid matching /mp-profile */
 const MP_ROUTES = ['/mp/'];
@@ -91,6 +91,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Run on all routes except Next internals
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Run on all routes except Next.js internals and static public assets
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf|css|js)$).*)'],
 };

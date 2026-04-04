@@ -90,11 +90,18 @@ func (s *Server) handleMPProfile(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-// GET /mp/public-profile — cached 5 min, no authentication required.
-// Joins users + mp_profiles to return the full constituency MP profile.
+// GET /mp/public-profile?constituency=... — cached 5 min, no authentication required.
+// Joins users + mp_profiles to return the full constituency MP profile matching the param.
 func (s *Server) handleMPPublicProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cacheKey := "mp:public-profile:ayawaso"
+	
+	reqConstituency := r.URL.Query().Get("constituency")
+	if reqConstituency == "" {
+		// Fallback to Ayawaso West Wuogon for backwards-compatibility or empty params
+		reqConstituency = "Ayawaso West Wuogon" 
+	}
+	
+	cacheKey := "mp:public-profile:" + reqConstituency
 
 	if s.Cache != nil {
 		if data, err := s.Cache.Get(ctx, cacheKey); err == nil {
@@ -124,10 +131,10 @@ func (s *Server) handleMPPublicProfile(w http.ResponseWriter, r *http.Request) {
 			COALESCE(p.photo_url,'')   AS photo_url
 		FROM users u
 		LEFT JOIN mp_profiles p ON p.user_id = u.id
-		WHERE u.role = 'mp'
+		WHERE u.role = 'mp' AND u.constituency = $1
 		LIMIT 1`
 
-	row := s.Store.Primary.QueryRow(ctx, q)
+	row := s.Store.Primary.QueryRow(ctx, q, reqConstituency)
 
 	var (
 		uid                                      pgtype.UUID

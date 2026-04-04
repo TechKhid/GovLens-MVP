@@ -43,8 +43,8 @@ export default function Navigation() {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    // Don't render navbar on the login page — AFTER all hooks
-    if (pathname === '/login') return null;
+    // Don't render navbar on the login or register pages — AFTER all hooks
+    if (pathname === '/login' || pathname === '/register') return null;
 
     const role = user?.role ?? 'citizen';
 
@@ -93,7 +93,7 @@ export default function Navigation() {
                         </span>
                     </Link>
                     <span className="hidden md:inline text-xs text-muted-text font-body border-l border-border pl-4">
-                        Ayawaso West Wuogon
+                        {user?.constituency || 'GovLens'}
                     </span>
                 </div>
 

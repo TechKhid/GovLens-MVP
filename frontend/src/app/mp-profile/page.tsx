@@ -54,8 +54,12 @@ export default function MPProfilePage() {
         async function load() {
             setLoading(true);
             try {
+                // Get current user to determine their constituency
+                const user = getCurrentUser();
+                const userConstituency = user?.constituency || 'Ayawaso West Wuogon';
+
                 // Fetch the constituency MP's profile
-                const profile = await api.get<MPPublicProfileResponse>('/mp/public-profile');
+                const profile = await api.get<MPPublicProfileResponse>(`/mp/public-profile?constituency=${encodeURIComponent(userConstituency)}`);
                 setMpProfile(profile);
 
                 // Fetch issue analytics for stats
@@ -68,21 +72,8 @@ export default function MPProfilePage() {
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load profile');
-                // Fallback to static data
-                setMpProfile({
-                    id: '',
-                    name: 'Hon. John Dumelo',
-                    constituency: 'Ayawaso West Wuogon',
-                    party: 'National Democratic Congress (NDC)',
-                    term_start: '2025',
-                    term_end: '2029',
-                    bio: '',
-                    phone: '',
-                    office_addr: '',
-                    photo_url: '',
-                });
-
-                setStats({ total: 168, open: 89, resolved: 45, in_progress: 34 });
+                setMpProfile(null);
+                setStats(null);
             } finally {
                 setLoading(false);
             }
@@ -110,10 +101,24 @@ export default function MPProfilePage() {
         );
     }
 
-    const mp = mpProfile!;
+    if (!mpProfile) {
+        return (
+            <div className="max-w-[900px] mx-auto px-4 md:px-6 py-12 flex flex-col items-center text-center">
+                <div className="w-20 h-20 rounded-full bg-background flex items-center justify-center text-3xl mb-4">
+                    🏛️
+                </div>
+                <h2 className="font-display text-2xl font-bold mb-2">No MP Registered</h2>
+                <p className="text-muted-text font-body max-w-md">
+                    There is currently no Member of Parliament registered for your constituency. Encourage your local representative to join GovLens to connect with constituents.
+                </p>
+            </div>
+        );
+    }
+
+    const mp = mpProfile;
     const initials = mp.name.split(' ').slice(-2).map(n => n[0]).join('').toUpperCase();
-    const resolvedCount = stats?.resolved ?? 45;
-    const totalCount = stats?.total ?? 168;
+    const resolvedCount = stats?.resolved ?? 0;
+    const totalCount = stats?.total ?? 0;
     const approvalRating = 72;
     const approvalTrend = 6;
 
@@ -128,7 +133,7 @@ export default function MPProfilePage() {
             {/* Header */}
             <div className="card p-6 mb-6">
                 <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-full flex-shrink-0 relative overflow-hidden bg-primary-text flex items-center justify-center">
+                    <div className="w-28 h-28 rounded-full flex-shrink-0 relative overflow-hidden bg-primary-text flex items-center justify-center">
                         {mp.photo_url ? (
                             <Image
                                 src={mp.photo_url}
@@ -137,7 +142,7 @@ export default function MPProfilePage() {
                                 className="object-cover"
                             />
                         ) : (
-                            <span className="text-white font-display text-xl font-bold">
+                            <span className="text-white font-display text-3xl font-bold">
                                 {initials}
                             </span>
                         )}

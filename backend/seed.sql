@@ -23,7 +23,7 @@ INSERT INTO mp_profiles (user_id, party, term_start, term_end, bio, phone, offic
     'Hon. John Dumelo is the Member of Parliament for Ayawaso West Wuogon Constituency in the Greater Accra Region. A film actor, entrepreneur and agripreneur, he champions youth employment, community development, and transparent governance for constituents.',
     '+233 030 000 0004',
     'Ayawaso West Wuogon Constituency Office, East Legon, Accra',
-    'https://upload.wikimedia.org/wikipedia/commons/e/e0/John_Dumelo_at_the_2016_NDC_Campaign_Launch.jpg'
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVsUNgf_koOZU7DOnFrttBzXePTeJUJC2_-Q&s'
   )
 ON CONFLICT (user_id) DO UPDATE SET
   party       = EXCLUDED.party,

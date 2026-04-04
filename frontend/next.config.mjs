@@ -7,6 +7,11 @@ const nextConfig = {
                 hostname: 'upload.wikimedia.org',
                 pathname: '/wikipedia/commons/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'encrypted-tbn0.gstatic.com',
+                pathname: '/images/**',
+            },
         ],
     },
 };

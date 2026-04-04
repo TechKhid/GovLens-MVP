@@ -24,7 +24,14 @@ type RegisterRequest struct {
 	Name         string `json:"name"`
 	Email        string `json:"email"`
 	Password     string `json:"password"`
+	Role         string `json:"role"`
 	Constituency string `json:"constituency"`
+	Party        string `json:"party"`
+	TermStart    string `json:"term_start"`
+	TermEnd      string `json:"term_end"`
+	Bio          string `json:"bio"`
+	Phone        string `json:"phone"`
+	OfficeAddr   string `json:"office_addr"`
 }
 
 // UserResponse is the public-facing representation of a user.
@@ -70,16 +77,50 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		constituencyPtr = &req.Constituency
 	}
 
+	role := req.Role
+	if role != "mp" {
+		role = "citizen"
+	}
+
 	user, err := s.Store.CreateUser(r.Context(), db.CreateUserParams{
 		Name:         req.Name,
 		Email:        req.Email,
 		PasswordHash: hashedPassword,
-		Role:         "citizen",
+		Role:         role,
 		Constituency: constituencyPtr,
 	})
 	if err != nil {
 		http.Error(w, "could not create user: "+err.Error(), http.StatusConflict)
 		return
+	}
+
+	if role == "mp" {
+		termStart := req.TermStart
+		if termStart == "" {
+			termStart = "2025"
+		}
+		termEnd := req.TermEnd
+		if termEnd == "" {
+			termEnd = "2029"
+		}
+		bio := req.Bio
+		if bio == "" {
+			bio = "Member of Parliament for " + req.Constituency
+		}
+
+		_, err := s.Store.CreateMPProfile(r.Context(), db.CreateMPProfileParams{
+			UserID:     user.ID,
+			Party:      req.Party,
+			TermStart:  termStart,
+			TermEnd:    termEnd,
+			Bio:        bio,
+			Phone:      req.Phone,
+			OfficeAddr: req.OfficeAddr,
+			PhotoUrl:   "", // Left blank, to be updated later
+		})
+		if err != nil {
+			slog.Error("Failed to create MP Profile during registration", slog.Any("err", err))
+		}
 	}
 
 	var connStr string

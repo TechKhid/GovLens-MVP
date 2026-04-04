@@ -6,9 +6,23 @@ import {
 } from '@/lib/mockData';
 import { useDataStore } from '@/context/DataStoreContext';
 import StatCard from '@/components/StatCard';
+import { useAuth } from '@/context/RoleContext';
+import { useMemo } from 'react';
 
 export default function AnalyticsPage() {
-    const { issues, zones } = useDataStore();
+    const { issues: allIssues, zones: allZones } = useDataStore();
+    const { user } = useAuth();
+
+    // Restrict analytics exclusively to the MP's constituency
+    const issues = useMemo(() => {
+        if (!user || user.role !== 'mp' || !user.constituency) return allIssues;
+        return allIssues.filter((i) => i.zone === user.constituency);
+    }, [allIssues, user]);
+
+    const zones = useMemo(() => {
+        if (!user || user.role !== 'mp' || !user.constituency) return allZones;
+        return allZones.filter((z) => z.name === user.constituency);
+    }, [allZones, user]);
 
     // Sector distribution
     const sectorCounts: Record<string, number> = {};
@@ -140,7 +154,9 @@ export default function AnalyticsPage() {
                                 <div key={sector}>
                                     <div className="flex items-center justify-between mb-1">
                                         <div className="flex items-center gap-2">
-                                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                                            <svg width="10" height="10" viewBox="0 0 10 10" className="flex-shrink-0">
+                                                <circle cx="5" cy="5" r="5" fill={color} />
+                                            </svg>
                                             <span className="text-sm font-body">{sector}</span>
                                         </div>
                                         <span className="text-sm font-mono text-muted-text">{count}</span>
@@ -170,10 +186,9 @@ export default function AnalyticsPage() {
                                 <div key={zone.name}>
                                     <div className="flex items-center justify-between mb-1">
                                         <div className="flex items-center gap-2">
-                                            <span
-                                                className="w-2.5 h-2.5 rounded-full"
-                                                style={{ backgroundColor: SEVERITY_COLORS[zone.severity] }}
-                                            />
+                                            <svg width="10" height="10" viewBox="0 0 10 10" className="flex-shrink-0">
+                                                <circle cx="5" cy="5" r="5" fill={SEVERITY_COLORS[zone.severity]} />
+                                            </svg>
                                             <span className="text-sm font-body">{zone.name}</span>
                                         </div>
                                         <div className="flex items-center gap-2">

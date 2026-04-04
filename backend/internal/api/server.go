@@ -85,8 +85,24 @@ func (s *Server) setupRoutes() {
 		r.Get("/mp/profile", s.handleMPProfile)
 	})
 
+	// ── Admin ─────────────────────────────────────────────────────
+	r.Group(func(r chi.Router) {
+		r.Use(s.authMiddleware)
+		r.Use(s.sysadminMiddleware) // New middleware
+		
+		r.Get("/admin/stats", s.handleAdminStats)
+		r.Get("/admin/users", s.handleAdminListUsers)
+		r.Patch("/admin/users/{id}/suspend", s.handleAdminSuspendUser)
+		r.Patch("/admin/users/{id}/role", s.handleAdminUpdateRole)
+		r.Get("/admin/audit-logs", s.handleAdminAuditLogs)
+		r.Post("/admin/users/bulk-import", s.handleAdminBulkImport)
+	})
+
 	// ── Zones ─────────────────────────────────────────────────────
 	r.Get("/zones", s.handleListZones)
+
+	// ── Locations ─────────────────────────────────────────────────
+	r.Route("/locations", s.mountLocationsRoutes)
 
 	// ── Heatmap ───────────────────────────────────────────────────
 	r.Get("/heatmap", s.handleHeatmap)

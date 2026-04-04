@@ -47,8 +47,36 @@ func (s *Server) handleListIssues(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cacheKey := issuesCacheKey(zone)
-	if userIDStr == "" && s.Cache != nil {
+	// For authenticated users, enforce boundaries
+	var userID pgtype.UUID
+	isAuthenticated := false
+
+	if userIDStr != "" {
+		if err := userID.Scan(userIDStr); err == nil {
+			isAuthenticated = true
+			
+			// Check user role to enforce visibility boundaries
+			user, err := s.Store.GetUserByID(ctx, userID)
+			if err == nil {
+				// Both MPs and Citizens strictly see their own constituency
+				if user.Role != "sysadmin" && user.Role != "admin" && user.Constituency != nil && *user.Constituency != "" {
+					zoneOverride := *user.Constituency
+					zonePtr = &zoneOverride
+				}
+			}
+		}
+	}
+
+	// Recompute zone for cache key in case we overrode it
+	finalZone := ""
+	if zonePtr != nil {
+		finalZone = *zonePtr
+	}
+	cacheKey := issuesCacheKey(finalZone)
+
+	// We only cache if unauthenticated, or the user has no upvote-specific data requirements
+	// Note: Because we use 'ListIssuesWithUpvote' for auth'd users, we shouldn't use the generic cache
+	if !isAuthenticated && s.Cache != nil {
 		if data, err := s.Cache.Get(ctx, cacheKey); err == nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.Header().Set("X-Cache", "HIT")
@@ -61,25 +89,22 @@ func (s *Server) handleListIssues(w http.ResponseWriter, r *http.Request) {
 
 	var payload []byte
 
-	if userIDStr != "" {
-		var userID pgtype.UUID
-		if err := userID.Scan(userIDStr); err == nil {
-			issues, err := s.Store.ListIssuesWithUpvote(ctx, db.ListIssuesWithUpvoteParams{
-				Limit:  50,
-				Offset: 0,
-				Zone:   zonePtr,
-				UserID: userID,
-			})
-			if err != nil {
-				slog.Error("ListIssuesWithUpvote", slog.Any("err", err))
-				http.Error(w, "failed to get issues", http.StatusInternalServerError)
-				return
-			}
-			if issues == nil {
-				issues = []db.ListIssuesWithUpvoteRow{}
-			}
-			payload, _ = json.Marshal(issues)
+	if isAuthenticated {
+		issues, err := s.Store.ListIssuesWithUpvote(ctx, db.ListIssuesWithUpvoteParams{
+			Limit:  50,
+			Offset: 0,
+			Zone:   zonePtr,
+			UserID: userID,
+		})
+		if err != nil {
+			slog.Error("ListIssuesWithUpvote", slog.Any("err", err))
+			http.Error(w, "failed to get issues", http.StatusInternalServerError)
+			return
 		}
+		if issues == nil {
+			issues = []db.ListIssuesWithUpvoteRow{}
+		}
+		payload, _ = json.Marshal(issues)
 	}
 	
 	if len(payload) == 0 {

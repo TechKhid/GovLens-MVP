@@ -14,26 +14,35 @@ import SeverityPill from '@/components/SeverityPill';
 import SectorTag from '@/components/SectorTag';
 import IssueDetailDrawer from '@/components/IssueDetailDrawer';
 import EmptyState from '@/components/EmptyState';
+import { useAuth } from '@/context/RoleContext';
 
 export default function MPDashboard() {
     const { issues, toggleUpvote, isUpvoted } = useDataStore();
+    const { user } = useAuth();
+    
     const [statusFilters, setStatusFilters] = useState<Set<Status>>(new Set());
     const [sectorFilters, setSectorFilters] = useState<Set<Sector>>(new Set());
     const [severityFilters, setSeverityFilters] = useState<Set<Severity>>(new Set());
     const [zoneFilters, setZoneFilters] = useState<Set<string>>(new Set());
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
 
-    const selectedIssue = issues.find((i) => i.id === selectedIssueId) || null;
+    // Filter issues tightly so MPs only see their own constituency's issues
+    const myIssues = useMemo(() => {
+        if (!user || user.role !== 'mp' || !user.constituency) return issues;
+        return issues.filter(i => i.zone === user.constituency);
+    }, [issues, user]);
+
+    const selectedIssue = myIssues.find((i) => i.id === selectedIssueId) || null;
 
     const filteredIssues = useMemo(() => {
-        return issues.filter((issue) => {
+        return myIssues.filter((issue) => {
             if (statusFilters.size > 0 && !statusFilters.has(issue.status)) return false;
             if (sectorFilters.size > 0 && !sectorFilters.has(issue.sector)) return false;
             if (severityFilters.size > 0 && !severityFilters.has(issue.severity)) return false;
             if (zoneFilters.size > 0 && !zoneFilters.has(issue.zone)) return false;
             return true;
         });
-    }, [issues, statusFilters, sectorFilters, severityFilters, zoneFilters]);
+    }, [myIssues, statusFilters, sectorFilters, severityFilters, zoneFilters]);
 
     const toggleFilter = <T,>(set: Set<T>, value: T, setter: (s: Set<T>) => void) => {
         const next = new Set(set);
@@ -52,14 +61,14 @@ export default function MPDashboard() {
     const hasFilters = statusFilters.size > 0 || sectorFilters.size > 0 || severityFilters.size > 0 || zoneFilters.size > 0;
 
     // Stats
-    const openIssues = issues.filter((i) => i.status !== 'Resolved').length;
-    const ackRate = Math.round(
-        (issues.filter((i) => i.status !== 'Reported').length / issues.length) * 100
-    );
-    const resRate = Math.round(
-        (issues.filter((i) => i.status === 'Resolved').length / issues.length) * 100
-    );
-    const highPriority = issues.filter(
+    const openIssues = myIssues.filter((i) => i.status !== 'Resolved').length;
+    const ackRate = myIssues.length > 0 ? Math.round(
+        (myIssues.filter((i) => i.status !== 'Reported').length / myIssues.length) * 100
+    ) : 0;
+    const resRate = myIssues.length > 0 ? Math.round(
+        (myIssues.filter((i) => i.status === 'Resolved').length / myIssues.length) * 100
+    ) : 0;
+    const highPriority = myIssues.filter(
         (i) => i.severity === 'Critical' || i.severity === 'High'
     ).length;
 
@@ -108,7 +117,9 @@ export default function MPDashboard() {
                                         onChange={() => toggleFilter(statusFilters, s, setStatusFilters)}
                                         className="accent-primary-text"
                                     />
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[s] }} />
+                                    <svg width="8" height="8" viewBox="0 0 8 8" className="flex-shrink-0">
+                                        <circle cx="4" cy="4" r="4" fill={STATUS_COLORS[s]} />
+                                    </svg>
                                     {s}
                                 </label>
                             ))}
@@ -130,7 +141,9 @@ export default function MPDashboard() {
                                         onChange={() => toggleFilter(sectorFilters, s, setSectorFilters)}
                                         className="accent-primary-text"
                                     />
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SECTOR_COLORS[s] }} />
+                                    <svg width="8" height="8" viewBox="0 0 8 8" className="flex-shrink-0">
+                                        <circle cx="4" cy="4" r="4" fill={SECTOR_COLORS[s]} />
+                                    </svg>
                                     {s}
                                 </label>
                             ))}
@@ -173,7 +186,9 @@ export default function MPDashboard() {
                                         onChange={() => toggleFilter(severityFilters, s, setSeverityFilters)}
                                         className="accent-primary-text"
                                     />
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SEVERITY_COLORS[s] }} />
+                                    <svg width="8" height="8" viewBox="0 0 8 8" className="flex-shrink-0">
+                                        <circle cx="4" cy="4" r="4" fill={SEVERITY_COLORS[s]} />
+                                    </svg>
                                     {s}
                                 </label>
                             ))}
@@ -184,8 +199,8 @@ export default function MPDashboard() {
                     <div>
                         <h4 className="section-label mb-2">Date Range</h4>
                         <div className="flex gap-2">
-                            <input type="date" className="input-field text-xs" />
-                            <input type="date" className="input-field text-xs" />
+                            <input type="date" aria-label="Start Date" title="Start Date filter" className="input-field text-xs" />
+                            <input type="date" aria-label="End Date" title="End Date filter" className="input-field text-xs" />
                         </div>
                     </div>
 

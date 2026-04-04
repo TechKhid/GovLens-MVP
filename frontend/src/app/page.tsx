@@ -6,6 +6,7 @@ import {
     STATUS_COLORS, STATUSES,
 } from '@/lib/mockData';
 import { useDataStore } from '@/context/DataStoreContext';
+import { useAuth } from '@/context/RoleContext';
 import IssueCard from '@/components/IssueCard';
 import IssueDetailDrawer from '@/components/IssueDetailDrawer';
 import FilterBar from '@/components/FilterBar';
@@ -13,6 +14,7 @@ import ReportModal from '@/components/ReportModal';
 import EmptyState from '@/components/EmptyState';
 
 export default function IssueTracker() {
+    const { user } = useAuth();
     const { issues, toggleUpvote, isUpvoted, upvotedIds } = useDataStore();
     const [activeFilter, setActiveFilter] = useState<Status | 'All'>('All');
     const [activeSector, setActiveSector] = useState<Sector | null>(null);
@@ -22,7 +24,8 @@ export default function IssueTracker() {
     const filteredIssues = useMemo(() => {
         return issues.filter((issue) => {
             if (activeFilter !== 'All' && issue.status !== activeFilter) return false;
-            if (activeSector && issue.sector !== activeSector) return false;
+            // DB sectors may be lowercase — compare case-insensitively
+            if (activeSector && issue.sector?.toLowerCase() !== activeSector.toLowerCase()) return false;
             return true;
         });
     }, [issues, activeFilter, activeSector]);
@@ -38,11 +41,11 @@ export default function IssueTracker() {
         return counts;
     }, [issues]);
 
-    // Sector breakdown
+    // Sector breakdown — compare case-insensitively since DB stores lowercase
     const sectorBreakdown = useMemo(() => {
         const counts: Record<string, number> = {};
         SECTORS.forEach((s) => {
-            counts[s] = issues.filter((i) => i.sector === s).length;
+            counts[s] = issues.filter((i) => i.sector?.toLowerCase() === s.toLowerCase()).length;
         });
         return counts;
     }, [issues]);
@@ -58,7 +61,7 @@ export default function IssueTracker() {
                 <div>
                     <h1 className="font-display text-2xl font-bold">Issue Tracker</h1>
                     <p className="text-sm text-muted-text font-body mt-1">
-                        Community issues reported by citizens of Ayawaso West Wuogon
+                        Community issues reported by citizens of {user?.constituency || 'Ghana'}
                     </p>
                 </div>
                 <button

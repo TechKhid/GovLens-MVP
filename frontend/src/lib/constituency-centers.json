@@ -1,0 +1,1069 @@
+{
+  "Komenda Edina Eguafo Abrem": {
+    "lat": 5.0998654,
+    "lng": -1.3418837
+  },
+  "Cape Coast South": {
+    "lat": 5.5649601,
+    "lng": -0.2350586
+  },
+  "Cape Coast North": {
+    "lat": 5.6029605,
+    "lng": -0.2299314
+  },
+  "Abura Asebu Kwamankese": {
+    "lat": 5.2698722,
+    "lng": -1.188905
+  },
+  "Mfantseman": {
+    "lat": 5.20461,
+    "lng": -1.052489
+  },
+  "Ekumfi": {
+    "lat": 5.2891445,
+    "lng": -0.9088646
+  },
+  "Ajumako Enyan Esiam": {
+    "lat": 5.4299362,
+    "lng": -0.9578908
+  },
+  "Gomoa West": {
+    "lat": 5.3872554,
+    "lng": -0.8336386
+  },
+  "Gomoa Central": {
+    "lat": 5.3541861,
+    "lng": -0.7259679
+  },
+  "Gomoa East": {
+    "lat": 5.4769937,
+    "lng": -0.589746
+  },
+  "Effutu": {
+    "lat": 5.2166828,
+    "lng": -1.3496291
+  },
+  "Awutu Senya West": {
+    "lat": 5.6196589,
+    "lng": -0.5201456
+  },
+  "Awutu Senya East": {
+    "lat": 5.5980383,
+    "lng": -0.4737411
+  },
+  "Agona West": {
+    "lat": 4.8901537,
+    "lng": -1.9664135
+  },
+  "Agona East": {
+    "lat": 5.6355358,
+    "lng": -0.6547574
+  },
+  "Asikuma Odoben Brakwa": {
+    "lat": 5.6264983,
+    "lng": -1.0255188
+  },
+  "Assin Central": {
+    "lat": 5.8547576,
+    "lng": -1.3310965
+  },
+  "Assin North": {
+    "lat": 5.8254569,
+    "lng": -1.3739272
+  },
+  "Assin South": {
+    "lat": 5.5288964,
+    "lng": -1.2709402
+  },
+  "Twifo Atti Morkwa": {
+    "lat": 5.6804869,
+    "lng": -1.6186568
+  },
+  "Hemang Lower Denkyira": {
+    "lat": 5.4866423,
+    "lng": -1.5319116
+  },
+  "Upper Denkyira East": {
+    "lat": 6.1396607,
+    "lng": -2.2137032
+  },
+  "Upper Denkyira West": {
+    "lat": 6.107833,
+    "lng": -2.0693107
+  },
+  "Bole Bamboi": {
+    "lat": 9.083,
+    "lng": -1.817,
+    "isFallback": true
+  },
+  "Sawla Tuna Kalba": {
+    "lat": 9.4809443,
+    "lng": -2.4133093
+  },
+  "Damongo": {
+    "lat": 9.0850647,
+    "lng": -1.8200755
+  },
+  "Daboya Mankarigu": {
+    "lat": 9.083,
+    "lng": -1.817,
+    "isFallback": true
+  },
+  "Yapei Kusawgu": {
+    "lat": 9.083,
+    "lng": -1.817,
+    "isFallback": true
+  },
+  "Salaga South": {
+    "lat": 9.083,
+    "lng": -1.817,
+    "isFallback": true
+  },
+  "Salaga North": {
+    "lat": 9.3266256,
+    "lng": -0.7170073
+  },
+  "Jomoro": {
+    "lat": 5.7596966,
+    "lng": -2.5912076
+  },
+  "Ellembelle": {
+    "lat": 5.1495221,
+    "lng": -2.4214254
+  },
+  "Evalue Ajomoro Gwira": {
+    "lat": 4.933,
+    "lng": -1.717,
+    "isFallback": true
+  },
+  "Ahanta West": {
+    "lat": 4.8894781,
+    "lng": -1.9599133
+  },
+  "Takoradi": {
+    "lat": 4.887401,
+    "lng": -1.7519316
+  },
+  "Sekondi": {
+    "lat": 4.927456,
+    "lng": -1.7490216
+  },
+  "Essikadu Ketan": {
+    "lat": 4.933,
+    "lng": -1.717,
+    "isFallback": true
+  },
+  "Effia": {
+    "lat": 4.924023,
+    "lng": -1.7444677
+  },
+  "Kwesimintim": {
+    "lat": 4.918616,
+    "lng": -1.7595251
+  },
+  "Shama": {
+    "lat": 5.0606463,
+    "lng": -1.6428837
+  },
+  "Wassa East": {
+    "lat": 5.3622378,
+    "lng": -1.6207095
+  },
+  "Mpohor": {
+    "lat": 5.0585867,
+    "lng": -1.8270744
+  },
+  "Tarkwa Nsuaem": {
+    "lat": 5.310935,
+    "lng": -1.992426
+  },
+  "Prestea Huni Valley": {
+    "lat": 5.4336458,
+    "lng": -2.1423648
+  },
+  "Wassa Amenfi East": {
+    "lat": 5.7887007,
+    "lng": -2.0859425
+  },
+  "Amenfi Central": {
+    "lat": 5.736903,
+    "lng": -2.259408
+  },
+  "Amenfi West": {
+    "lat": 5.7954914,
+    "lng": -2.427945
+  },
+  "Bortianor Ngleshie Amanfro": {
+    "lat": 5.603,
+    "lng": -0.187,
+    "isFallback": true
+  },
+  "Domeabra Obom": {
+    "lat": 5.603,
+    "lng": -0.187,
+    "isFallback": true
+  },
+  "Weija Gbawe": {
+    "lat": 5.5792263,
+    "lng": -0.3306792
+  },
+  "Anyaa Sowutuom": {
+    "lat": 5.6071556,
+    "lng": -0.2837831
+  },
+  "Trobu": {
+    "lat": 5.620259,
+    "lng": -0.2375079
+  },
+  "Amasaman": {
+    "lat": 5.703291,
+    "lng": -0.2990647
+  },
+  "Dome Kwabenya": {
+    "lat": 5.6683718,
+    "lng": -0.2537504
+  },
+  "Madina": {
+    "lat": 5.6864962,
+    "lng": -0.1677052
+  },
+  "Ayawaso East": {
+    "lat": 5.5926236,
+    "lng": -0.1870969
+  },
+  "Ayawaso North": {
+    "lat": 5.6733697,
+    "lng": -0.28164
+  },
+  "Ayawaso Central": {
+    "lat": 5.5970272,
+    "lng": -0.2020901
+  },
+  "Ayawaso West Wuogon": {
+    "lat": 5.603,
+    "lng": -0.187,
+    "isFallback": true
+  },
+  "Okaikwei South": {
+    "lat": 5.6129039,
+    "lng": -0.2373958
+  },
+  "Ablekuma South": {
+    "lat": 5.5394861,
+    "lng": -0.2298005
+  },
+  "Odododiodioo": {
+    "lat": 5.603,
+    "lng": -0.187,
+    "isFallback": true
+  },
+  "Okaikwei Central": {
+    "lat": 5.6029626,
+    "lng": -0.225429
+  },
+  "Okaikwei North": {
+    "lat": 5.6004347,
+    "lng": -0.2308696
+  },
+  "Ablekuma North": {
+    "lat": 5.5681689,
+    "lng": -0.2567993
+  },
+  "Ablekuma Central": {
+    "lat": 5.6254735,
+    "lng": -0.3009031
+  },
+  "Ablekuma West": {
+    "lat": 5.5407419,
+    "lng": -0.2230565
+  },
+  "Korle Klottey": {
+    "lat": 5.5684537,
+    "lng": -0.213725
+  },
+  "Dadekotopon": {
+    "lat": 5.603,
+    "lng": -0.187,
+    "isFallback": true
+  },
+  "Ledzokuku": {
+    "lat": 5.5921632,
+    "lng": -0.0965829
+  },
+  "Krowor": {
+    "lat": 5.6109588,
+    "lng": -0.0767106
+  },
+  "Tema East": {
+    "lat": 5.7035594,
+    "lng": -0.0181343
+  },
+  "Tema Central": {
+    "lat": 5.5659266,
+    "lng": -0.2373184
+  },
+  "Tema West": {
+    "lat": 5.6322519,
+    "lng": -0.011567
+  },
+  "Kpone Katamanso": {
+    "lat": 5.6896899,
+    "lng": 0.0570242
+  },
+  "Ashaiman": {
+    "lat": 5.694385,
+    "lng": -0.029529
+  },
+  "Adentan": {
+    "lat": 5.7042433,
+    "lng": -0.1690967
+  },
+  "Shai Osudoku": {
+    "lat": 5.9587534,
+    "lng": 0.1618723
+  },
+  "Ningo Prampram": {
+    "lat": 5.811767,
+    "lng": 0.1461115
+  },
+  "Sege": {
+    "lat": 5.8749479,
+    "lng": 0.3616909
+  },
+  "Ada": {
+    "lat": 5.9169853,
+    "lng": -0.5699183
+  },
+  "Kpandai": {
+    "lat": 8.3946599,
+    "lng": -0.0775563
+  },
+  "Bimbilla": {
+    "lat": 8.859349,
+    "lng": 0.0557043
+  },
+  "Wulensi": {
+    "lat": 8.654739,
+    "lng": 0.001288
+  },
+  "Zabzugu": {
+    "lat": 9.0893743,
+    "lng": 0.3084989
+  },
+  "Tatale Sanguli": {
+    "lat": 9.3490673,
+    "lng": 0.5146325
+  },
+  "Yendi": {
+    "lat": 9.4466478,
+    "lng": -0.0035068
+  },
+  "Mion": {
+    "lat": 9.4528491,
+    "lng": -0.3355255
+  },
+  "Saboba": {
+    "lat": 9.7087053,
+    "lng": 0.1960983
+  },
+  "Gushegu": {
+    "lat": 9.9185016,
+    "lng": -0.2164706
+  },
+  "Karaga": {
+    "lat": 9.9179607,
+    "lng": -0.5358629
+  },
+  "Savelugu": {
+    "lat": 9.6260647,
+    "lng": -0.8258943
+  },
+  "Nanton": {
+    "lat": 9.5584827,
+    "lng": -0.7107286
+  },
+  "Tamale South": {
+    "lat": 8.0223625,
+    "lng": -1.7312824
+  },
+  "Tamale Central": {
+    "lat": 9.3997269,
+    "lng": -0.8320699
+  },
+  "Sagnarigu": {
+    "lat": 9.4220417,
+    "lng": -0.8796573
+  },
+  "Tamale North": {
+    "lat": 7.6406271,
+    "lng": -1.9053287
+  },
+  "Tolon": {
+    "lat": 9.555956,
+    "lng": -1.1979223
+  },
+  "Kumbungu": {
+    "lat": 9.7979079,
+    "lng": -1.0687301
+  },
+  "Buem": {
+    "lat": 7.3284666,
+    "lng": 0.6443545
+  },
+  "Biakoye": {
+    "lat": 7.3921798,
+    "lng": 0.2629736
+  },
+  "Akan": {
+    "lat": 8.067,
+    "lng": 0.183,
+    "isFallback": true
+  },
+  "Krachi East": {
+    "lat": 7.8027311,
+    "lng": 0.2794571
+  },
+  "Krachi West": {
+    "lat": 7.858748,
+    "lng": -0.01097
+  },
+  "Krachi Nchumuru": {
+    "lat": 8.1892008,
+    "lng": -0.0866134
+  },
+  "Nkwanta South": {
+    "lat": 8.249977,
+    "lng": 0.4127042
+  },
+  "Nkwanta North": {
+    "lat": 8.5517612,
+    "lng": 0.2347438
+  },
+  "Guan": {
+    "lat": 7.2099945,
+    "lng": 0.5132327
+  },
+  "Asunafo South": {
+    "lat": 6.5628047,
+    "lng": -2.5327936
+  },
+  "Asunafo North": {
+    "lat": 6.8150997,
+    "lng": -2.6773664
+  },
+  "Asutifi South": {
+    "lat": 6.8492428,
+    "lng": -2.4612534
+  },
+  "Asutifi North": {
+    "lat": 7.0765184,
+    "lng": -2.5253185
+  },
+  "Tano South": {
+    "lat": 6.892173,
+    "lng": -1.5015028
+  },
+  "Tano North": {
+    "lat": 7.2013338,
+    "lng": -2.1124118
+  },
+  "Sunyani East": {
+    "lat": 5.5850927,
+    "lng": -0.1925996
+  },
+  "Sunyani West": {
+    "lat": 7.4241348,
+    "lng": -2.3305281
+  },
+  "Dormaa West": {
+    "lat": 6.9753842,
+    "lng": -2.9463116
+  },
+  "Dormaa Central": {
+    "lat": 7.2670896,
+    "lng": -2.8677897
+  },
+  "Dormaa East": {
+    "lat": 7.2643285,
+    "lng": -2.641463
+  },
+  "Berekum East": {
+    "lat": 7.450473,
+    "lng": -2.5824981
+  },
+  "Berekum West": {
+    "lat": 7.4719942,
+    "lng": -2.7107891
+  },
+  "Jaman South": {
+    "lat": 7.6081708,
+    "lng": -2.7895336
+  },
+  "Jaman North": {
+    "lat": 7.9132614,
+    "lng": -2.6972328
+  },
+  "Banda": {
+    "lat": 8.3518178,
+    "lng": -2.4057071
+  },
+  "Tain": {
+    "lat": 7.7911134,
+    "lng": -2.3836038
+  },
+  "Wenchi": {
+    "lat": 7.738011,
+    "lng": -2.103519
+  },
+  "Techiman": {
+    "lat": 7.584971,
+    "lng": -1.936401
+  },
+  "Kintampo North": {
+    "lat": 8.053714,
+    "lng": -1.728919
+  },
+  "Kintampo South": {
+    "lat": 7.9432155,
+    "lng": -1.7340052
+  },
+  "Nkoranza North": {
+    "lat": 7.7184776,
+    "lng": -1.6438962
+  },
+  "Nkoranza South": {
+    "lat": 7.5624941,
+    "lng": -1.703932
+  },
+  "Atebubu Amantin": {
+    "lat": 7.7451821,
+    "lng": -0.988776
+  },
+  "Pru West": {
+    "lat": 8.034878,
+    "lng": -1.3132923
+  },
+  "Pru East": {
+    "lat": 8.1404587,
+    "lng": -0.8151811
+  },
+  "Sene West": {
+    "lat": 7.7489777,
+    "lng": -0.6181129
+  },
+  "Sene East": {
+    "lat": 7.6658435,
+    "lng": -0.1824262
+  },
+  "Techiman North": {
+    "lat": 7.703655,
+    "lng": -1.9857703
+  },
+  "Abuakwa North": {
+    "lat": 6.7416148,
+    "lng": -1.7311057
+  },
+  "Abuakwa South": {
+    "lat": 6.2877174,
+    "lng": -0.4660908
+  },
+  "Afram Plains North": {
+    "lat": 7.0463989,
+    "lng": -0.0907995
+  },
+  "Afram Plains South": {
+    "lat": 6.937245,
+    "lng": -0.2450801
+  },
+  "Akwatia": {
+    "lat": 6.0422,
+    "lng": -0.797137
+  },
+  "Asene Manso Akroso": {
+    "lat": 5.855163,
+    "lng": -0.8089562
+  },
+  "Asuogyaman": {
+    "lat": 6.3627908,
+    "lng": 0.0952599
+  },
+  "Atiwa East": {
+    "lat": 6.3954833,
+    "lng": -0.5972962
+  },
+  "Atiwa West": {
+    "lat": 6.2077806,
+    "lng": -0.6358087
+  },
+  "Birim Central": {
+    "lat": 5.9152641,
+    "lng": -0.9869067
+  },
+  "Birim North": {
+    "lat": 6.3681437,
+    "lng": -1.0227179
+  },
+  "Birim South": {
+    "lat": 5.900662,
+    "lng": -1.0300023
+  },
+  "Denkyembour": {
+    "lat": 6.056189,
+    "lng": -0.8145346
+  },
+  "Fanteakwa North": {
+    "lat": 6.4976169,
+    "lng": -0.3625461
+  },
+  "Fanteakwa South": {
+    "lat": 6.3711738,
+    "lng": -0.3118722
+  },
+  "Kwaebibirem": {
+    "lat": 6.1070316,
+    "lng": -0.8368789
+  },
+  "Lower Manya Krobo": {
+    "lat": 6.1467264,
+    "lng": 0.0111251
+  },
+  "New Juaben North": {
+    "lat": 6.1189763,
+    "lng": -0.2738555
+  },
+  "New Juaben South": {
+    "lat": 6.0913691,
+    "lng": -0.2591026
+  },
+  "Nsawam Adoagyiri": {
+    "lat": 5.8131625,
+    "lng": -0.352577
+  },
+  "Suhum": {
+    "lat": 6.035885,
+    "lng": -0.4552751
+  },
+  "Upper Manya Krobo": {
+    "lat": 6.4020111,
+    "lng": -0.1344294
+  },
+  "Upper West Akim": {
+    "lat": 5.8067803,
+    "lng": -0.5400572
+  },
+  "Yilo Krobo": {
+    "lat": 6.076293,
+    "lng": -0.0173116
+  },
+  "Okere": {
+    "lat": 6.0403461,
+    "lng": -0.1277705
+  },
+  "Akuapem North": {
+    "lat": 5.9555657,
+    "lng": -0.2883831
+  },
+  "Akuapem South": {
+    "lat": 5.8465181,
+    "lng": -0.1756471
+  },
+  "Abetifi": {
+    "lat": 6.672433,
+    "lng": -0.743845
+  },
+  "Nkawkaw": {
+    "lat": 6.552795,
+    "lng": -0.769811
+  },
+  "Mpraeso": {
+    "lat": 6.596614,
+    "lng": -0.733393
+  },
+  "Walewale": {
+    "lat": 10.347691,
+    "lng": -0.802274
+  },
+  "Yagaba Kubori": {
+    "lat": 10.533,
+    "lng": -0.367,
+    "isFallback": true
+  },
+  "Nalerigu Gambaga": {
+    "lat": 10.533,
+    "lng": -0.367,
+    "isFallback": true
+  },
+  "Bunkpurugu": {
+    "lat": 10.518794,
+    "lng": 0.0963092
+  },
+  "Yunyoo": {
+    "lat": 10.4824632,
+    "lng": -0.0170991
+  },
+  "Chereponi": {
+    "lat": 10.1792654,
+    "lng": 0.2079872
+  },
+  "Wa Central": {
+    "lat": 5.5431077,
+    "lng": -0.2059275
+  },
+  "Wa West": {
+    "lat": 9.9177318,
+    "lng": -2.6099296
+  },
+  "Wa East": {
+    "lat": 10.0840934,
+    "lng": -1.9747826
+  },
+  "Nadowli Kaleo": {
+    "lat": 10.2868347,
+    "lng": -2.6394776
+  },
+  "Daffiama Bussie Issa": {
+    "lat": 10.367484,
+    "lng": -2.2622267
+  },
+  "Jirapa": {
+    "lat": 10.5366328,
+    "lng": -2.7008646
+  },
+  "Lambussie": {
+    "lat": 10.846747,
+    "lng": -2.708741
+  },
+  "Lawra": {
+    "lat": 10.642831,
+    "lng": -2.893139
+  },
+  "Nandom": {
+    "lat": 10.8520701,
+    "lng": -2.760077
+  },
+  "Sissala West": {
+    "lat": 10.7464871,
+    "lng": -2.2934428
+  },
+  "Sissala East": {
+    "lat": 10.8728946,
+    "lng": -1.9882189
+  },
+  "Afigya Kwabre North": {
+    "lat": 7.038915,
+    "lng": -1.6266713
+  },
+  "Afigya Kwabre South": {
+    "lat": 6.8399807,
+    "lng": -1.609579
+  },
+  "Adansi Asokwa": {
+    "lat": 6.1669747,
+    "lng": -1.4365597
+  },
+  "Adansi North": {
+    "lat": 6.3006124,
+    "lng": -1.5897139
+  },
+  "Adansi South": {
+    "lat": 6.004275,
+    "lng": -1.3931403
+  },
+  "Ahafo Ano North": {
+    "lat": 6.9763654,
+    "lng": -2.2959355
+  },
+  "Ahafo Ano South East": {
+    "lat": 6.9463336,
+    "lng": -1.9009536
+  },
+  "Ahafo Ano South West": {
+    "lat": 6.8289788,
+    "lng": -2.0003866
+  },
+  "Akrofuom": {
+    "lat": 6.0326224,
+    "lng": -1.6713643
+  },
+  "Amansie Central": {
+    "lat": 6.2074416,
+    "lng": -1.8281412
+  },
+  "Amansie West": {
+    "lat": 6.4397508,
+    "lng": -1.8523705
+  },
+  "Asante Akim Central": {
+    "lat": 6.5973382,
+    "lng": -1.1276397
+  },
+  "Asante Akim North": {
+    "lat": 6.8410461,
+    "lng": -0.9340056
+  },
+  "Asante Akim South": {
+    "lat": 6.5973382,
+    "lng": -1.1276397
+  },
+  "Asawase": {
+    "lat": 6.7049105,
+    "lng": -1.6042723
+  },
+  "Atwima Kwanwoma": {
+    "lat": 6.5898429,
+    "lng": -1.7116279
+  },
+  "Atwima Mponua": {
+    "lat": 6.5558963,
+    "lng": -2.1765908
+  },
+  "Atwima Nwabiagya North": {
+    "lat": 6.8776433,
+    "lng": -1.7448959
+  },
+  "Atwima Nwabiagya South": {
+    "lat": 7.0889903,
+    "lng": -2.0290879
+  },
+  "Bekwai": {
+    "lat": 6.456707,
+    "lng": -1.5837496
+  },
+  "Bosome Freho": {
+    "lat": 6.3681227,
+    "lng": -1.3663231
+  },
+  "Bosomtwe": {
+    "lat": 6.5613537,
+    "lng": -1.4598111
+  },
+  "Ejisu": {
+    "lat": 6.7139918,
+    "lng": -1.4665782
+  },
+  "Ejura Sekyedumase": {
+    "lat": 7.3846802,
+    "lng": -1.355945
+  },
+  "Kumawu": {
+    "lat": 6.910457,
+    "lng": -1.277911
+  },
+  "Kwabre East": {
+    "lat": 6.7922035,
+    "lng": -1.5602349
+  },
+  "Mampong": {
+    "lat": 7.056139,
+    "lng": -1.40425
+  },
+  "Manhyia North": {
+    "lat": 6.6219916,
+    "lng": -2.5249099
+  },
+  "Manhyia South": {
+    "lat": 6.4742346,
+    "lng": -2.5165913
+  },
+  "New Edubiase": {
+    "lat": 6.06106,
+    "lng": -1.391838
+  },
+  "Obuasi East": {
+    "lat": 6.2003022,
+    "lng": -1.6379749
+  },
+  "Obuasi West": {
+    "lat": 5.4468618,
+    "lng": -0.7848291
+  },
+  "Offinso North": {
+    "lat": 7.2797481,
+    "lng": -1.7983275
+  },
+  "Offinso South": {
+    "lat": 7.181951,
+    "lng": -2.0288336
+  },
+  "Oforikrom": {
+    "lat": 6.6885038,
+    "lng": -1.5925804
+  },
+  "Sekyere Afram Plains": {
+    "lat": 7.2028616,
+    "lng": -0.592082
+  },
+  "Sekyere Central": {
+    "lat": 7.2162547,
+    "lng": -1.0995561
+  },
+  "Sekyere East": {
+    "lat": 6.779473,
+    "lng": -1.2993542
+  },
+  "Sekyere Kumawu": {
+    "lat": 6.9098849,
+    "lng": -1.2394294
+  },
+  "Sekyere South": {
+    "lat": 6.9953297,
+    "lng": -1.502921
+  },
+  "Subin": {
+    "lat": 5.9670635,
+    "lng": -1.4507988
+  },
+  "Suame": {
+    "lat": 6.7163628,
+    "lng": -1.6369204
+  },
+  "Tafo": {
+    "lat": 6.7340553,
+    "lng": -1.6089927
+  },
+  "Tepa": {
+    "lat": 7.0048059,
+    "lng": -2.163816
+  },
+  "Bantama": {
+    "lat": 6.7051319,
+    "lng": -1.63486
+  },
+  "Asokwa": {
+    "lat": 6.6739843,
+    "lng": -1.6026178
+  },
+  "Afigya Sekyere East": {
+    "lat": 6.687,
+    "lng": -1.624,
+    "isFallback": true
+  },
+  "Builsa South": {
+    "lat": 10.5303239,
+    "lng": -1.2624658
+  },
+  "Builsa North": {
+    "lat": 10.7103344,
+    "lng": -1.2585409
+  },
+  "Kassena Nankana East": {
+    "lat": 10.8991929,
+    "lng": -1.0910621
+  },
+  "Kassena Nankana West": {
+    "lat": 10.8731755,
+    "lng": -1.3157209
+  },
+  "Bolgatanga Central": {
+    "lat": 10.7829991,
+    "lng": -0.851502
+  },
+  "Bolgatanga East": {
+    "lat": 10.8019286,
+    "lng": -0.7949212
+  },
+  "Bongo": {
+    "lat": 10.9166839,
+    "lng": -0.8057679
+  },
+  "Talensi": {
+    "lat": 10.6451058,
+    "lng": -0.6258744
+  },
+  "Nabdam": {
+    "lat": 10.8469045,
+    "lng": -0.661562
+  },
+  "Bawku West": {
+    "lat": 10.84277,
+    "lng": -0.4929476
+  },
+  "Bawku": {
+    "lat": 11.0607602,
+    "lng": -0.2422876
+  },
+  "Pusiga": {
+    "lat": 11.0758675,
+    "lng": -0.0978768
+  },
+  "Garu": {
+    "lat": 10.7712263,
+    "lng": -0.2104045
+  },
+  "Tempane": {
+    "lat": 10.9030337,
+    "lng": -0.0917541
+  },
+  "Binduri": {
+    "lat": 10.9475864,
+    "lng": -0.3016557
+  },
+  "Keta": {
+    "lat": 5.9215688,
+    "lng": 0.9910728
+  },
+  "Anlo": {
+    "lat": 5.8081492,
+    "lng": 0.9313456
+  },
+  "Ketu South": {
+    "lat": 6.1185256,
+    "lng": 1.1332398
+  },
+  "Ketu North": {
+    "lat": 6.23334,
+    "lng": 0.9983732
+  },
+  "Akatsi South": {
+    "lat": 6.154134,
+    "lng": 0.7973671
+  },
+  "Akatsi North": {
+    "lat": 6.3108306,
+    "lng": 0.8764391
+  },
+  "South Tongu": {
+    "lat": 5.9657728,
+    "lng": 0.6410612
+  },
+  "Central Tongu": {
+    "lat": 6.1688436,
+    "lng": 0.6115617
+  },
+  "North Tongu": {
+    "lat": 6.1439949,
+    "lng": 0.2971889
+  },
+  "Adaklu": {
+    "lat": 6.4412571,
+    "lng": 0.5334602
+  },
+  "Agotime Ziope": {
+    "lat": 6.4723599,
+    "lng": 0.6923047
+  },
+  "Ho Central": {
+    "lat": 5.4788192,
+    "lng": -0.5389525
+  },
+  "Ho West": {
+    "lat": 6.6020724,
+    "lng": 0.3343168
+  },
+  "Hohoe": {
+    "lat": 7.153187,
+    "lng": 0.477735
+  },
+  "Afadzato South": {
+    "lat": 6.877185,
+    "lng": 0.3647792
+  },
+  "North Dayi": {
+    "lat": 6.9138465,
+    "lng": 0.2226732
+  },
+  "South Dayi": {
+    "lat": 6.5449087,
+    "lng": 0.240546
+  }
+}

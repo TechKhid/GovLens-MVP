@@ -2,13 +2,13 @@
 
 import { usePathname } from 'next/navigation';
 
-// Adds top padding for the fixed navbar on all pages except /login
+// Adds top padding for the fixed navbar on all pages except /login and /register
 export default function MainWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const isLoginPage = pathname === '/login';
+    const isAuthPage = pathname === '/login' || pathname === '/register';
 
     return (
-        <main className={isLoginPage ? '' : 'pt-[72px]'}>
+        <main className={isAuthPage ? '' : 'pt-[72px]'}>
             {children}
         </main>
     );
