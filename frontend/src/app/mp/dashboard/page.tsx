@@ -15,6 +15,7 @@ import SectorTag from '@/components/SectorTag';
 import IssueDetailDrawer from '@/components/IssueDetailDrawer';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/context/RoleContext';
+import { matchesConstituencyZone } from '@/lib/geo-scope';
 
 export default function MPDashboard() {
     const { issues, toggleUpvote, isUpvoted } = useDataStore();
@@ -29,7 +30,7 @@ export default function MPDashboard() {
     // Filter issues tightly so MPs only see their own constituency's issues
     const myIssues = useMemo(() => {
         if (!user || user.role !== 'mp' || !user.constituency) return issues;
-        return issues.filter(i => i.zone === user.constituency);
+        return issues.filter((i) => matchesConstituencyZone(user.constituency, i.zone));
     }, [issues, user]);
 
     const selectedIssue = myIssues.find((i) => i.id === selectedIssueId) || null;

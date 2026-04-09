@@ -41,6 +41,7 @@ func (s *Server) handleListIssues(w http.ResponseWriter, r *http.Request) {
 	if zone != "" {
 		zonePtr = &zone
 	}
+	constituencyScope := ""
 
 	if s.Store == nil {
 		http.Error(w, "database unavailable", http.StatusServiceUnavailable)
@@ -58,10 +59,15 @@ func (s *Server) handleListIssues(w http.ResponseWriter, r *http.Request) {
 			// Check user role to enforce visibility boundaries
 			user, err := s.Store.GetUserByID(ctx, userID)
 			if err == nil {
-				// Both MPs and Citizens strictly see their own constituency
+				// Apply constituency scoping for authenticated non-admin users.
 				if user.Role != "sysadmin" && user.Role != "admin" && user.Constituency != nil && *user.Constituency != "" {
-					zoneOverride := *user.Constituency
-					zonePtr = &zoneOverride
+					constituencyScope = *user.Constituency
+					if len(zonesForConstituency(constituencyScope)) == 0 {
+						zoneOverride := *user.Constituency
+						zonePtr = &zoneOverride
+					} else {
+						zonePtr = nil
+					}
 				}
 			}
 		}
@@ -90,8 +96,13 @@ func (s *Server) handleListIssues(w http.ResponseWriter, r *http.Request) {
 	var payload []byte
 
 	if isAuthenticated {
+		limit := int32(50)
+		if constituencyScope != "" && len(zonesForConstituency(constituencyScope)) > 0 {
+			limit = 500
+		}
+
 		issues, err := s.Store.ListIssuesWithUpvote(ctx, db.ListIssuesWithUpvoteParams{
-			Limit:  50,
+			Limit:  limit,
 			Offset: 0,
 			Zone:   zonePtr,
 			UserID: userID,
@@ -104,12 +115,26 @@ func (s *Server) handleListIssues(w http.ResponseWriter, r *http.Request) {
 		if issues == nil {
 			issues = []db.ListIssuesWithUpvoteRow{}
 		}
+		if constituencyScope != "" && len(zonesForConstituency(constituencyScope)) > 0 {
+			filtered := make([]db.ListIssuesWithUpvoteRow, 0, len(issues))
+			for _, issue := range issues {
+				if zoneMatchesConstituency(constituencyScope, issue.Zone) {
+					filtered = append(filtered, issue)
+				}
+			}
+			issues = filtered
+		}
 		payload, _ = json.Marshal(issues)
 	}
 	
 	if len(payload) == 0 {
+		limit := int32(50)
+		if constituencyScope != "" && len(zonesForConstituency(constituencyScope)) > 0 {
+			limit = 500
+		}
+
 		issues, err := s.Store.ListIssues(ctx, db.ListIssuesParams{
-			Limit:  50,
+			Limit:  limit,
 			Offset: 0,
 			Zone:   zonePtr,
 		})
@@ -120,6 +145,15 @@ func (s *Server) handleListIssues(w http.ResponseWriter, r *http.Request) {
 		}
 		if issues == nil {
 			issues = []db.Issue{}
+		}
+		if constituencyScope != "" && len(zonesForConstituency(constituencyScope)) > 0 {
+			filtered := make([]db.Issue, 0, len(issues))
+			for _, issue := range issues {
+				if zoneMatchesConstituency(constituencyScope, issue.Zone) {
+					filtered = append(filtered, issue)
+				}
+			}
+			issues = filtered
 		}
 		payload, _ = json.Marshal(issues)
 
@@ -348,9 +382,21 @@ func (s *Server) handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Write resolved_at timestamp for ML response-time analytics
+	if input.Status == "resolved" {
+		if _, err := s.Store.Primary.Exec(
+			ctx,
+			"UPDATE issues SET resolved_at = NOW() WHERE id = $1 AND resolved_at IS NULL",
+			id,
+		); err != nil {
+			slog.Warn("resolved_at update failed", slog.Any("err", err))
+		}
+	}
+
 	if s.Cache != nil {
 		s.Cache.DeletePattern(ctx, "issues:list:*")
 		s.Cache.Delete(ctx, "analytics:overview")
+		s.Cache.DeletePattern(ctx, "ml:*")
 	}
 
 	respondJSON(w, http.StatusOK, map[string]string{"status": "success"})

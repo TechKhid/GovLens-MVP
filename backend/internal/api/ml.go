@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -19,6 +20,19 @@ func mlSidecarURL() string {
 		u = "http://ml-sidecar:8001"
 	}
 	return u
+}
+
+func buildMLPath(endpoint string, query map[string]string) string {
+	values := url.Values{}
+	for key, value := range query {
+		if value != "" {
+			values.Set(key, value)
+		}
+	}
+	if encoded := values.Encode(); encoded != "" {
+		return endpoint + "?" + encoded
+	}
+	return endpoint
 }
 
 // proxyML is a helper that forwards a request to the ML sidecar, handles caching,
@@ -83,22 +97,60 @@ func (s *Server) handleMLSentiment(w http.ResponseWriter, r *http.Request) {
 	if zone != "" {
 		cacheKey += ":" + zone
 	}
-	s.proxyML(w, r, "/sentiment?zone="+zone, cacheKey, 10*time.Minute)
+	s.proxyML(w, r, buildMLPath("/sentiment", map[string]string{"zone": zone}), cacheKey, 10*time.Minute)
 }
 
 // GET /ml/insights — proxy → ML sidecar; cached 10min
 func (s *Server) handleMLInsights(w http.ResponseWriter, r *http.Request) {
 	zone := r.URL.Query().Get("zone")
-	cacheKey := "ml:insights"
-	if zone != "" {
-		cacheKey += ":" + zone
+	days := r.URL.Query().Get("days")
+	if days == "" {
+		days = "7"
 	}
-	s.proxyML(w, r, "/insights?zone="+zone, cacheKey, 10*time.Minute)
+	cacheKey := "ml:insights:" + zone + ":" + days
+	s.proxyML(w, r, buildMLPath("/insights", map[string]string{
+		"zone": zone,
+		"days": days,
+	}), cacheKey, 10*time.Minute)
 }
 
 // POST /ml/classify — proxy → ML sidecar; not cached
 func (s *Server) handleMLClassify(w http.ResponseWriter, r *http.Request) {
 	s.proxyML(w, r, "/classify", "", 0)
+}
+
+// GET /ml/sector-insights — proxy → ML sidecar; cached 10min
+func (s *Server) handleMLSectorInsights(w http.ResponseWriter, r *http.Request) {
+	zone := r.URL.Query().Get("zone")
+	cacheKey := "ml:sector-insights"
+	if zone != "" {
+		cacheKey += ":" + zone
+	}
+	s.proxyML(w, r, buildMLPath("/sector-insights", map[string]string{"zone": zone}), cacheKey, 10*time.Minute)
+}
+
+// GET /ml/recurring — proxy → ML sidecar; cached 10min
+func (s *Server) handleMLRecurring(w http.ResponseWriter, r *http.Request) {
+	zone := r.URL.Query().Get("zone")
+	threshold := r.URL.Query().Get("threshold")
+	if threshold == "" {
+		threshold = "2"
+	}
+	cacheKey := "ml:recurring:" + zone
+	s.proxyML(w, r, buildMLPath("/recurring", map[string]string{
+		"zone":      zone,
+		"threshold": threshold,
+	}), cacheKey, 10*time.Minute)
+}
+
+// GET /ml/response-trend — proxy → ML sidecar; cached 10min
+func (s *Server) handleMLResponseTrend(w http.ResponseWriter, r *http.Request) {
+	zone := r.URL.Query().Get("zone")
+	cacheKey := "ml:response-trend"
+	if zone != "" {
+		cacheKey += ":" + zone
+	}
+	s.proxyML(w, r, buildMLPath("/response-trend", map[string]string{"zone": zone}), cacheKey, 10*time.Minute)
 }
 
 // respondError sends a JSON-formatted error response with consistent structure.

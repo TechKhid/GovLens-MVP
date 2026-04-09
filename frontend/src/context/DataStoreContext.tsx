@@ -38,16 +38,57 @@ interface ApiIssueWithUpvote extends ApiIssue {
     has_upvoted: boolean;
 }
 
+function titleCase(value: string): string {
+    return value
+        .split(/[\s-]+/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+}
+
+function normalizeSector(sector?: string | null): Issue['sector'] {
+    if (!sector) return 'Other';
+
+    const normalized = sector.trim().toLowerCase();
+    const map: Record<string, Issue['sector']> = {
+        infrastructure: 'Infrastructure',
+        sanitation: 'Sanitation',
+        roads: 'Roads',
+        drainage: 'Drainage',
+        education: 'Education',
+        water: 'Water',
+        security: 'Security',
+        other: 'Other',
+        unclassified: 'Other',
+    };
+
+    return map[normalized] ?? (titleCase(normalized) as Issue['sector']);
+}
+
+function normalizeSeverity(severity?: string | null): Issue['severity'] {
+    if (!severity) return 'Medium';
+
+    const normalized = severity.trim().toLowerCase();
+    const map: Record<string, Issue['severity']> = {
+        low: 'Low',
+        medium: 'Medium',
+        high: 'High',
+        critical: 'Critical',
+    };
+
+    return map[normalized] ?? 'Medium';
+}
+
 // Map an API issue to the local Issue shape used by all components.
 function mapApiIssue(a: ApiIssue): Issue {
     return {
         id: a.id,
         title: a.title,
         description: a.description,
-        sector: (a.sector ?? 'Other') as Issue['sector'],
+        sector: normalizeSector(a.sector),
         zone: a.zone ?? '',
         status: mapStatus(a.status),
-        severity: (a.severity ?? 'Medium') as Issue['severity'],
+        severity: normalizeSeverity(a.severity),
         reporter: { name: 'Citizen', avatar: '' },
         photos: [],
         location: {

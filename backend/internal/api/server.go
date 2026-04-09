@@ -107,10 +107,13 @@ func (s *Server) setupRoutes() {
 	// ── Heatmap ───────────────────────────────────────────────────
 	r.Get("/heatmap", s.handleHeatmap)
 
-	// ── ML Proxy ──────────────────────────────────────────────────
+	// ── ML Proxy ──────────────────────────────────────────────────────────────
 	r.Get("/ml/sentiment", s.handleMLSentiment)
 	r.Get("/ml/insights", s.handleMLInsights)
 	r.Post("/ml/classify", s.handleMLClassify)
+	r.Get("/ml/sector-insights", s.handleMLSectorInsights)
+	r.Get("/ml/recurring", s.handleMLRecurring)
+	r.Get("/ml/response-trend", s.handleMLResponseTrend)
 }
 
 // respondJSON writes a JSON payload with the given HTTP status code.
