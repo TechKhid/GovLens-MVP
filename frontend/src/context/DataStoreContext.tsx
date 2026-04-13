@@ -58,6 +58,8 @@ function normalizeSector(sector?: string | null): Issue['sector'] {
         education: 'Education',
         water: 'Water',
         security: 'Security',
+        healthcare: 'Other',
+        environment: 'Other',
         other: 'Other',
         unclassified: 'Other',
     };

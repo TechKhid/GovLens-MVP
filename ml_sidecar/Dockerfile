@@ -19,6 +19,18 @@ RUN pip install --upgrade pip setuptools wheel \
 # Prophet requires cmdstan binaries to be compiled and available
 RUN python -m cmdstanpy.install_cmdstan
 
+# Prophet 1.1.6 prefers its bundled cmdstan path if present, but that packaged
+# directory is incomplete in this environment. Point Prophet's expected path at
+# the real CmdStan installation so the backend initializes correctly.
+RUN python -c "\
+import pathlib, shutil; \
+import cmdstanpy, prophet; \
+src = pathlib.Path(cmdstanpy.cmdstan_path()); \
+dst = pathlib.Path(prophet.__file__).resolve().parent / 'stan_model' / 'cmdstan-2.33.1'; \
+shutil.rmtree(dst, ignore_errors=True); \
+dst.symlink_to(src, target_is_directory=True); \
+print(f'Linked {dst} -> {src}')"
+
 # Pre-download the sentence-transformer model weights at build time
 # so the container starts instantly and needs no outbound internet at   runtime.
 RUN python -c "\

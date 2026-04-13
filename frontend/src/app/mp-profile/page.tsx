@@ -29,6 +29,21 @@ interface SentimentData {
     sample_size: number;
 }
 
+const APPROVAL_SEGMENT_STYLES = {
+    low: {
+        bar: 'bg-status-resolved',
+        text: 'text-status-resolved',
+    },
+    medium: {
+        bar: 'bg-primary-text',
+        text: 'text-primary-text',
+    },
+    high: {
+        bar: 'bg-status-critical',
+        text: 'text-status-critical',
+    },
+} as const;
+
 function compoundToApproval(compound: number): number {
     return Math.round(Math.max(0, Math.min(100, (compound + 1) * 50)));
 }
@@ -125,6 +140,25 @@ export default function MPProfilePage() {
     const totalCount = constituencyIssues.length;
     const resolvedCount = constituencyIssues.filter((issue) => issue.status === 'Resolved').length;
     const approvalRating = sentiment ? compoundToApproval(sentiment.average_compound) : null;
+    const severitySegments = sentiment
+        ? [
+              {
+                  key: 'low' as const,
+                  label: 'routine',
+                  count: sentiment.severity_distribution.low,
+              },
+              {
+                  key: 'medium' as const,
+                  label: 'medium',
+                  count: sentiment.severity_distribution.medium,
+              },
+              {
+                  key: 'high' as const,
+                  label: 'urgent',
+                  count: sentiment.severity_distribution.high,
+              },
+          ]
+        : [];
 
     const sectorRates: [Sector, number][] = (() => {
         const sectorCounts = new Map<Sector, number>();
@@ -212,36 +246,26 @@ export default function MPProfilePage() {
                                     <p className="text-[10px] text-muted-text font-body mb-1">
                                         Based on {sentiment.sample_size} issue reports
                                     </p>
-                                    <div className="flex h-2 rounded-full overflow-hidden gap-0.5">
-                                        <div
-                                            className="bg-status-resolved"
-                                            style={{
-                                                width: `${(sentiment.severity_distribution.low / Math.max(sentiment.sample_size, 1)) * 100}%`,
-                                            }}
-                                        />
-                                        <div
-                                            className="bg-status-pending"
-                                            style={{
-                                                width: `${(sentiment.severity_distribution.medium / Math.max(sentiment.sample_size, 1)) * 100}%`,
-                                            }}
-                                        />
-                                        <div
-                                            className="bg-status-critical"
-                                            style={{
-                                                width: `${(sentiment.severity_distribution.high / Math.max(sentiment.sample_size, 1)) * 100}%`,
-                                            }}
-                                        />
+                                    <div className="flex h-2 rounded-full overflow-hidden bg-background">
+                                        {severitySegments.map((segment) => (
+                                            <div
+                                                key={segment.key}
+                                                className={`${APPROVAL_SEGMENT_STYLES[segment.key].bar} flex-none`}
+                                                style={{
+                                                    width: `${(segment.count / Math.max(sentiment.sample_size, 1)) * 100}%`,
+                                                }}
+                                            />
+                                        ))}
                                     </div>
                                     <div className="flex gap-3 mt-1">
-                                        <span className="text-[9px] font-mono text-status-resolved">
-                                            {sentiment.severity_distribution.low} routine
-                                        </span>
-                                        <span className="text-[9px] font-mono text-status-pending">
-                                            {sentiment.severity_distribution.medium} medium
-                                        </span>
-                                        <span className="text-[9px] font-mono text-status-critical">
-                                            {sentiment.severity_distribution.high} urgent
-                                        </span>
+                                        {severitySegments.map((segment) => (
+                                            <span
+                                                key={segment.key}
+                                                className={`text-[9px] font-mono ${APPROVAL_SEGMENT_STYLES[segment.key].text}`}
+                                            >
+                                                {segment.count} {segment.label}
+                                            </span>
+                                        ))}
                                     </div>
                                 </div>
                             )}

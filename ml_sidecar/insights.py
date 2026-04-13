@@ -19,10 +19,12 @@ from collections import defaultdict
 from typing import Optional
 
 from geo_scope import zone_matches_scope
+from prophet_runtime import ensure_prophet_cmdstan_path
 
 try:
-    from prophet import Prophet
     import pandas as pd
+    ensure_prophet_cmdstan_path()
+    from prophet import Prophet
     HAS_PROPHET = True
 except ImportError:
     HAS_PROPHET = False
@@ -81,11 +83,13 @@ def forecast(
 
 
 def _prophet_forecast(sorted_dates, daily, days_ahead, historical) -> dict:
+    ensure_prophet_cmdstan_path()
     df = pd.DataFrame({
         "ds": pd.to_datetime(sorted_dates),
         "y": [float(daily[d]) for d in sorted_dates],
     })
     m = Prophet(
+        stan_backend="CMDSTANPY",
         weekly_seasonality=True,
         yearly_seasonality=False,
         daily_seasonality=False,
