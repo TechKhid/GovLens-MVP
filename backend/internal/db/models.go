@@ -62,6 +62,7 @@ type Issue struct {
 	Lat         *float64           `json:"lat"`
 	Lng         *float64           `json:"lng"`
 	Upvotes     *int32             `json:"upvotes"`
+	ImageUrls   []string           `json:"image_urls"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }

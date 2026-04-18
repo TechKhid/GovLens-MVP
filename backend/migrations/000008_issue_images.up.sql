@@ -1,0 +1,2 @@
+ALTER TABLE issues
+    ADD COLUMN IF NOT EXISTS image_urls TEXT[] NOT NULL DEFAULT '{}'::TEXT[];

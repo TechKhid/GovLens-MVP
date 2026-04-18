@@ -1,17 +1,35 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/govlens/govlens-mvp/backend/internal/db"
 	"github.com/govlens/govlens-mvp/backend/internal/service"
+	"github.com/google/uuid"
 )
+
+const (
+	maxMPAvatarSize    = 5 << 20
+	maxRegisterFormBytes = 16 << 20
+)
+
+var allowedMPAvatarTypes = map[string]string{
+	"image/jpeg": ".jpg",
+	"image/png":  ".png",
+	"image/webp": ".webp",
+}
 
 // LoginRequest is the JSON body for POST /auth/login.
 type LoginRequest struct {
@@ -32,6 +50,7 @@ type RegisterRequest struct {
 	Bio          string `json:"bio"`
 	Phone        string `json:"phone"`
 	OfficeAddr   string `json:"office_addr"`
+	PhotoURL     string `json:"photo_url"`
 }
 
 // UserResponse is the public-facing representation of a user.
@@ -49,12 +68,140 @@ func formatUUID(id pgtype.UUID) string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }
 
-// POST /auth/register
-func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
+func sanitizeRegisterRequest(req RegisterRequest) RegisterRequest {
+	req.Name = strings.TrimSpace(req.Name)
+	req.Email = strings.TrimSpace(req.Email)
+	req.Role = strings.ToLower(strings.TrimSpace(req.Role))
+	req.Constituency = strings.TrimSpace(req.Constituency)
+	req.Party = strings.TrimSpace(req.Party)
+	req.TermStart = strings.TrimSpace(req.TermStart)
+	req.TermEnd = strings.TrimSpace(req.TermEnd)
+	req.Bio = strings.TrimSpace(req.Bio)
+	req.Phone = strings.TrimSpace(req.Phone)
+	req.OfficeAddr = strings.TrimSpace(req.OfficeAddr)
+	req.PhotoURL = strings.TrimSpace(req.PhotoURL)
+	return req
+}
+
+func (s *Server) parseRegisterRequest(w http.ResponseWriter, r *http.Request) (RegisterRequest, func(), error) {
+	contentType := r.Header.Get("Content-Type")
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		return s.parseMultipartRegisterRequest(w, r)
+	}
+
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		return RegisterRequest{}, nil, fmt.Errorf("invalid request")
+	}
+	return sanitizeRegisterRequest(req), nil, nil
+}
+
+func (s *Server) parseMultipartRegisterRequest(w http.ResponseWriter, r *http.Request) (RegisterRequest, func(), error) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxRegisterFormBytes)
+	if err := r.ParseMultipartForm(maxRegisterFormBytes); err != nil {
+		return RegisterRequest{}, nil, fmt.Errorf("file upload too large or invalid multipart form")
+	}
+
+	req := sanitizeRegisterRequest(RegisterRequest{
+		Name:         r.FormValue("name"),
+		Email:        r.FormValue("email"),
+		Password:     r.FormValue("password"),
+		Role:         r.FormValue("role"),
+		Constituency: r.FormValue("constituency"),
+		Party:        r.FormValue("party"),
+		TermStart:    r.FormValue("term_start"),
+		TermEnd:      r.FormValue("term_end"),
+		Bio:          r.FormValue("bio"),
+		Phone:        r.FormValue("phone"),
+		OfficeAddr:   r.FormValue("office_addr"),
+	})
+
+	files := r.MultipartForm.File["avatar"]
+	if len(files) == 0 {
+		return req, nil, nil
+	}
+	if len(files) > 1 {
+		return RegisterRequest{}, nil, fmt.Errorf("upload only one avatar image")
+	}
+	if req.Role != "mp" {
+		return RegisterRequest{}, nil, fmt.Errorf("avatar upload is only available for MP registration")
+	}
+	if err := s.ensureUploadsRoot(); err != nil {
+		return RegisterRequest{}, nil, fmt.Errorf("failed to prepare upload directory")
+	}
+
+	avatarID := uuid.NewString()
+	avatarDir := filepath.Join(s.uploadsRoot(), "mps", avatarID)
+	if err := os.MkdirAll(avatarDir, 0o755); err != nil {
+		return RegisterRequest{}, nil, fmt.Errorf("failed to prepare avatar directory")
+	}
+
+	cleanup := func() {
+		_ = os.RemoveAll(avatarDir)
+	}
+
+	avatarURL, err := s.saveMPAvatar(avatarDir, avatarID, files[0])
+	if err != nil {
+		cleanup()
+		return RegisterRequest{}, nil, err
+	}
+	req.PhotoURL = avatarURL
+	return req, cleanup, nil
+}
+
+func (s *Server) saveMPAvatar(avatarDir, avatarID string, header *multipart.FileHeader) (string, error) {
+	if header.Size > maxMPAvatarSize {
+		return "", fmt.Errorf("avatar image must be 5MB or smaller")
+	}
+
+	src, err := header.Open()
+	if err != nil {
+		return "", fmt.Errorf("failed to read uploaded avatar")
+	}
+	defer src.Close()
+
+	sniffBuf := make([]byte, 512)
+	n, readErr := io.ReadFull(src, sniffBuf)
+	if readErr != nil && readErr != io.ErrUnexpectedEOF {
+		return "", fmt.Errorf("failed to inspect uploaded avatar")
+	}
+
+	contentType := http.DetectContentType(sniffBuf[:n])
+	ext, ok := allowedMPAvatarTypes[contentType]
+	if !ok {
+		return "", fmt.Errorf("unsupported avatar format; use JPG, PNG, or WebP")
+	}
+
+	fileName := "avatar-" + uuid.NewString() + ext
+	dstPath := filepath.Join(avatarDir, fileName)
+	dst, err := os.OpenFile(dstPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err != nil {
+		return "", fmt.Errorf("failed to store uploaded avatar")
+	}
+	defer dst.Close()
+
+	reader := io.MultiReader(bytes.NewReader(sniffBuf[:n]), src)
+	if _, err := io.Copy(dst, reader); err != nil {
+		return "", fmt.Errorf("failed to store uploaded avatar")
+	}
+
+	return s.uploadedFileURL(filepath.Join("mps", avatarID, fileName)), nil
+}
+
+// POST /auth/register
+func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
+	req, cleanupUploads, err := s.parseRegisterRequest(w, r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+	keepUploads := false
+	if cleanupUploads != nil {
+		defer func() {
+			if !keepUploads {
+				cleanupUploads()
+			}
+		}()
 	}
 	if req.Email == "" || req.Password == "" || req.Name == "" {
 		http.Error(w, "name, email and password are required", http.StatusBadRequest)
@@ -116,10 +263,12 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 			Bio:        bio,
 			Phone:      req.Phone,
 			OfficeAddr: req.OfficeAddr,
-			PhotoUrl:   "", // Left blank, to be updated later
+			PhotoUrl:   req.PhotoURL,
 		})
 		if err != nil {
 			slog.Error("Failed to create MP Profile during registration", slog.Any("err", err))
+		} else {
+			keepUploads = true
 		}
 	}
 

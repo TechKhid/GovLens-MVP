@@ -9,7 +9,8 @@ import {
     useEffect,
     ReactNode,
 } from 'react';
-import { api } from '@/lib/api';
+import { api, resolveApiUrl } from '@/lib/api';
+import { useAuth } from '@/context/RoleContext';
 import {
     Issue, Comment, BriefingPost, ZoneData,
 } from '@/lib/mockData';
@@ -28,6 +29,7 @@ interface ApiIssue {
     lat?: number | null;
     lng?: number | null;
     upvotes?: number | null;
+    image_urls?: string[] | null;
     created_at: string;
     updated_at: string;
     // present when fetched with upvote check
@@ -92,7 +94,7 @@ function mapApiIssue(a: ApiIssue): Issue {
         status: mapStatus(a.status),
         severity: normalizeSeverity(a.severity),
         reporter: { name: 'Citizen', avatar: '' },
-        photos: [],
+        photos: (a.image_urls ?? []).map(resolveApiUrl),
         location: {
             address: a.zone ?? '',
             gps: { lat: a.lat ?? 0, lng: a.lng ?? 0 },
@@ -125,7 +127,7 @@ interface DataStoreContextType {
     upvotedIds: Set<string>;
     loading: boolean;
 
-    addIssue: (issue: Omit<Issue, 'id'> & { lat?: number; lng?: number }) => Promise<string>;
+    addIssue: (issue: Omit<Issue, 'id'> & { lat?: number; lng?: number; photoFiles?: File[] }) => Promise<string>;
     updateIssue: (id: string, patch: Partial<Issue>) => void;
     addComment: (issueId: string, comment: Omit<Comment, 'id'>) => void;
     toggleUpvote: (id: string) => Promise<void>;
@@ -142,6 +144,7 @@ const DataStoreContext = createContext<DataStoreContextType | undefined>(undefin
 // ── Provider ───────────────────────────────────────────────────────────────
 
 export function DataStoreProvider({ children }: { children: ReactNode }) {
+    const { user } = useAuth();
     const [issues, setIssues] = useState<Issue[]>([]);
     const [briefings, setBriefings] = useState<BriefingPost[]>([]);
     const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set());
@@ -174,12 +177,32 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         refreshIssues();
+    }, [refreshIssues, user?.sub]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+
+        const handleFocus = () => {
+            void refreshIssues();
+        };
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                void refreshIssues();
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [refreshIssues]);
 
     // ── Issue actions ──────────────────────────────────────────────────────
 
     const addIssue = useCallback(
-        async (issueData: Omit<Issue, 'id'> & { lat?: number; lng?: number }): Promise<string> => {
+        async (issueData: Omit<Issue, 'id'> & { lat?: number; lng?: number; photoFiles?: File[] }): Promise<string> => {
             const body = {
                 title: issueData.title,
                 description: issueData.description,
@@ -190,7 +213,20 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
                 lng: issueData.lng ?? issueData.location?.gps?.lng ?? 0,
             };
             try {
-                const created = await api.post<ApiIssue>('/issues', body);
+                const created = issueData.photoFiles && issueData.photoFiles.length > 0
+                    ? await (() => {
+                        const formData = new FormData();
+                        formData.append('title', body.title);
+                        formData.append('description', body.description);
+                        formData.append('zone', body.zone);
+                        formData.append('lat', String(body.lat));
+                        formData.append('lng', String(body.lng));
+                        for (const file of issueData.photoFiles ?? []) {
+                            formData.append('images', file);
+                        }
+                        return api.postForm<ApiIssue>('/issues', formData);
+                    })()
+                    : await api.post<ApiIssue>('/issues', body);
                 const mapped = mapApiIssue(created);
                 setIssues((prev) => [mapped, ...prev]);
                 return created.id;

@@ -17,6 +17,11 @@ interface ReportModalProps {
     onClose: () => void;
 }
 
+interface PhotoUpload {
+    file: File;
+    previewUrl: string;
+}
+
 // Ghana center — overridden by constituency on open
 const GHANA_LAT = 7.9465;
 const GHANA_LNG = -1.0232;
@@ -32,7 +37,9 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
     const [zone, setZone] = useState('');
     const [pinLat, setPinLat] = useState(GHANA_LAT);
     const [pinLng, setPinLng] = useState(GHANA_LNG);
-    const [photos, setPhotos] = useState<string[]>([]);
+    const [photoUploads, setPhotoUploads] = useState<PhotoUpload[]>([]);
+    const [photoError, setPhotoError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     // Fly map pin to the user's constituency center when the modal opens
     useEffect(() => {
@@ -61,17 +68,58 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files) return;
-        const newPhotos = Array.from(files).map((f) => URL.createObjectURL(f));
-        setPhotos((prev) => [...prev, ...newPhotos].slice(0, 6));
+        const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+        const nextUploads: PhotoUpload[] = [];
+        let nextError = '';
+
+        for (const file of Array.from(files)) {
+            if (!allowedTypes.has(file.type)) {
+                nextError = 'Use JPG, PNG, or WebP images only.';
+                continue;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                nextError = 'Each image must be 10MB or smaller.';
+                continue;
+            }
+            nextUploads.push({
+                file,
+                previewUrl: URL.createObjectURL(file),
+            });
+        }
+
+        setPhotoUploads((prev) => {
+            const merged = [...prev, ...nextUploads];
+            if (merged.length > 6) {
+                nextError = 'You can upload up to 6 images per report.';
+            }
+            const limited = merged.slice(0, 6);
+            merged.slice(6).forEach((upload) => URL.revokeObjectURL(upload.previewUrl));
+            return limited;
+        });
+        setPhotoError(nextError);
+        e.target.value = '';
     };
 
     const removePhoto = (index: number) => {
-        setPhotos((prev) => prev.filter((_, i) => i !== index));
+        setPhotoUploads((prev) => {
+            const target = prev[index];
+            if (target) {
+                URL.revokeObjectURL(target.previewUrl);
+            }
+            return prev.filter((_, i) => i !== index);
+        });
+        setPhotoError('');
     };
 
     const handlePinChange = (lat: number, lng: number) => {
         setPinLat(lat);
         setPinLng(lng);
+    };
+
+    const clearPhotoUploads = () => {
+        photoUploads.forEach((upload) => URL.revokeObjectURL(upload.previewUrl));
+        setPhotoUploads([]);
+        setPhotoError('');
     };
 
     const resetAndClose = () => {
@@ -81,12 +129,54 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
         setDescription('');
         setAddress('');
         setZone('');
-        setPhotos([]);
+        clearPhotoUploads();
+        setSubmitting(false);
         // Reset to constituency center (or Ghana center if unknown)
         const entry = user?.constituency ? getConstituencyCenter(user.constituency) : null;
         setPinLat(entry?.lat ?? GHANA_LAT);
         setPinLng(entry?.lng ?? GHANA_LNG);
         onClose();
+    };
+
+    const handleContinue = async () => {
+        if (step !== 3) {
+            setStep(step + 1);
+            return;
+        }
+
+        const now = new Date().toISOString();
+        setSubmitting(true);
+        setPhotoError('');
+
+        try {
+            await addIssue({
+                title,
+                description: description || title,
+                sector: sector!,
+                zone: zone || user?.constituency || '',
+                status: 'Reported',
+                severity: 'Medium',
+                reporter: { name: 'You', avatar: 'YO' },
+                photos: [],
+                photoFiles: photoUploads.map((upload) => upload.file),
+                location: {
+                    address: address || user?.constituency || '',
+                    gps: { lat: pinLat, lng: pinLng },
+                },
+                submittedAt: now,
+                upvotes: 0,
+                comments: [],
+                affectedResidents: 0,
+                timeline: [
+                    { status: 'Reported', date: now },
+                ],
+            });
+            setStep(4);
+        } catch (err) {
+            setPhotoError(err instanceof Error ? err.message : 'Failed to submit report.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -240,24 +330,24 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                                 <label className="block w-full border-2 border-dashed border-border rounded p-8 text-center cursor-pointer hover:bg-white transition-colors">
                                     <input
                                         type="file"
-                                        accept="image/jpeg,image/png,image/heic"
+                                        accept="image/jpeg,image/png,image/webp"
                                         multiple
                                         onChange={handlePhotoUpload}
                                         className="hidden"
                                     />
                                     <div className="text-muted-text">
                                         <div className="text-2xl mb-2 opacity-40">📷</div>
-                                        <p className="text-sm font-body">Drag and drop photos here</p>
-                                        <p className="text-xs font-body mt-1">or click to browse · JPG, PNG, HEIC · max 10MB each</p>
+                                        <p className="text-sm font-body">Drag and drop JPG, PNG, or WebP photos here</p>
+                                        <p className="text-xs font-body mt-1">or click to browse · up to 6 images · max 10MB each</p>
                                     </div>
                                 </label>
                             </div>
 
-                            {photos.length > 0 && (
+                            {photoUploads.length > 0 && (
                                 <div className="grid grid-cols-3 gap-2">
-                                    {photos.map((photo, i) => (
+                                    {photoUploads.map((photo, i) => (
                                         <div key={i} className="relative aspect-square rounded border border-border overflow-hidden">
-                                            <img src={photo} alt="" className="w-full h-full object-cover" />
+                                            <img src={photo.previewUrl} alt="" className="w-full h-full object-cover" />
                                             <button
                                                 onClick={() => removePhoto(i)}
                                                 className="absolute top-1 right-1 w-5 h-5 bg-black bg-opacity-60 text-white text-[10px] flex items-center justify-center rounded-full cursor-pointer"
@@ -267,6 +357,10 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                                         </div>
                                     ))}
                                 </div>
+                            )}
+
+                            {photoError && (
+                                <p className="text-xs text-status-urgent font-body">{photoError}</p>
                             )}
 
                             <p className="text-xs text-muted-text font-body">
@@ -316,38 +410,11 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                 <div className="px-6 py-4 border-t border-border">
                     {step < 4 ? (
                         <button
-                            onClick={() => {
-                                if (step === 3) {
-                                    // Build and submit the issue
-                                    const now = new Date().toISOString();
-                                    addIssue({
-                                        title,
-                                        description: description || title,
-                                        sector: sector!,
-                                        zone: zone || user?.constituency || '',
-                                        status: 'Reported',
-                                        severity: 'Medium',
-                                        reporter: { name: 'You', avatar: 'YO' },
-                                        photos,
-                                        location: {
-                                            address: address || user?.constituency || '',
-                                            gps: { lat: pinLat, lng: pinLng },
-                                        },
-                                        submittedAt: now,
-                                        upvotes: 0,
-                                        comments: [],
-                                        affectedResidents: 0,
-                                        timeline: [
-                                            { status: 'Reported', date: now },
-                                        ],
-                                    });
-                                }
-                                setStep(step + 1);
-                            }}
-                            disabled={!canProceed()}
-                            className={`btn-primary w-full ${!canProceed() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            onClick={handleContinue}
+                            disabled={!canProceed() || submitting}
+                            className={`btn-primary w-full ${!canProceed() || submitting ? 'opacity-40 cursor-not-allowed' : ''}`}
                         >
-                            {step === 3 ? 'Submit Report' : 'Continue'}
+                            {step === 3 ? (submitting ? 'Submitting...' : 'Submit Report') : 'Continue'}
                         </button>
                     ) : (
                         <button

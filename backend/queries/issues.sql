@@ -1,6 +1,6 @@
 -- name: CreateIssue :one
-INSERT INTO issues (user_id, title, description, zone, lat, lng)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO issues (user_id, title, description, zone, lat, lng, image_urls)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: ListIssues :many

@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 
 import { useDataStore } from '@/context/DataStoreContext';
-import { api } from '@/lib/api';
+import { api, resolveApiUrl } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 import { matchesConstituencyZone } from '@/lib/geo-scope';
 import { SECTOR_COLORS, Sector } from '@/lib/mockData';
@@ -127,6 +126,7 @@ export default function MPProfilePage() {
     }
 
     const mp = mpProfile;
+    const photoUrl = mp.photo_url ? resolveApiUrl(mp.photo_url) : '';
     const initials = mp.name
         .split(' ')
         .slice(-2)
@@ -187,12 +187,11 @@ export default function MPProfilePage() {
             <div className="card p-6 mb-6">
                 <div className="flex items-start gap-4">
                     <div className="w-28 h-28 rounded-full flex-shrink-0 relative overflow-hidden bg-primary-text flex items-center justify-center">
-                        {mp.photo_url ? (
-                            <Image
-                                src={mp.photo_url}
+                        {photoUrl ? (
+                            <img
+                                src={photoUrl}
                                 alt={mp.name}
-                                fill
-                                className="object-cover"
+                                className="w-full h-full object-cover"
                             />
                         ) : (
                             <span className="text-white font-display text-3xl font-bold">

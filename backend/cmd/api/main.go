@@ -63,6 +63,7 @@ func main() {
 
 	// Health route at root level (used by nginx + k8s probes)
 	root.Get("/health", apiServer.HandleHealth)
+	root.Handle("/api/v1/uploads/*", apiServer.UploadsHandler())
 
 	// Mount all /api/v1/* routes
 	root.Mount("/api/v1", apiServer.Router)

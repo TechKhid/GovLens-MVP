@@ -84,6 +84,9 @@ services:
       - JWT_SECRET=supersecret-change-in-production
       - ML_SIDECAR_URL=http://ml-sidecar:8001
       - PORT=8000
+      - UPLOADS_DIR=/var/lib/govlens/uploads
+    volumes:
+      - uploadsdata:/var/lib/govlens/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -128,3 +131,4 @@ volumes:
   pgdata:
   redisdata:
   natsdata:
+  uploadsdata:

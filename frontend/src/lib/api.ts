@@ -9,6 +9,7 @@ import { getToken, setToken, clearToken } from './auth';
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
+const API_ORIGIN = BASE_URL.replace(/\/api\/v1\/?$/, '');
 
 // ─── Core request helper ─────────────────────────────────────────────────────
 
@@ -18,9 +19,11 @@ async function request<T>(
   retry = true
 ): Promise<T> {
   const token = getToken();
+  const isFormData =
+    typeof FormData !== 'undefined' && options.body instanceof FormData;
 
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers as Record<string, string>),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
@@ -91,6 +94,12 @@ export const api = {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     }),
 
+  postForm: <T>(path: string, body: FormData) =>
+    request<T>(path, {
+      method: 'POST',
+      body,
+    }),
+
   patch: <T>(path: string, body?: unknown) =>
     request<T>(path, {
       method: 'PATCH',
@@ -100,3 +109,13 @@ export const api = {
   delete: <T>(path: string) =>
     request<T>(path, { method: 'DELETE' }),
 };
+
+export function resolveApiUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+  if (path.startsWith('/')) {
+    return `${API_ORIGIN}${path}`;
+  }
+  return `${API_ORIGIN}/${path}`;
+}
