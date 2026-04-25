@@ -1,0 +1,41 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e519]:
+      - generic [ref=e520]:
+        - generic [ref=e521]:
+          - generic [ref=e523]: G
+          - generic [ref=e524]:
+            - paragraph [ref=e525]: GovLens
+            - paragraph [ref=e526]: See it. Report it. Resolve it.
+        - heading "Sign in" [level=1] [ref=e527]
+        - paragraph [ref=e528]: Enter your credentials to access your account.
+        - paragraph [ref=e529]: MP access is limited to approved accounts. Citizen and admin access use real backend credentials.
+        - generic [ref=e530]:
+          - generic [ref=e531]:
+            - generic [ref=e532]: Email
+            - textbox "Email" [ref=e533]:
+              - /placeholder: you@example.com
+          - generic [ref=e534]:
+            - generic [ref=e535]: Password
+            - textbox "Password" [ref=e536]
+          - button "Sign in" [ref=e537] [cursor=pointer]
+        - paragraph [ref=e539]:
+          - text: Don't have an account?
+          - link "Sign up" [ref=e540] [cursor=pointer]:
+            - /url: /register
+      - link "Back to public site" [ref=e542] [cursor=pointer]:
+        - /url: /
+  - generic [ref=e31] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e32]:
+      - img [ref=e33]
+    - generic [ref=e36]:
+      - button "Open issues overlay" [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]: "1"
+          - generic [ref=e40]: "2"
+        - generic [ref=e41]:
+          - text: Issue
+          - generic [ref=e42]: s
+      - button "Collapse issues badge" [ref=e43]:
+        - img [ref=e44]
+  - alert [ref=e46]

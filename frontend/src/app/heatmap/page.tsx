@@ -140,7 +140,7 @@ export default function HeatmapPage() {
                                         <p className="font-mono text-lg font-semibold">{selectedZone.issueCount - selectedZone.resolvedCount}</p>
                                     </div>
                                     <div>
-                                        <span className="text-xs text-muted-text font-body">Resolved</span>
+                                        <span className="text-xs text-muted-text font-body">Verified Resolved</span>
                                         <p className="font-mono text-lg font-semibold text-status-resolved">{selectedZone.resolvedCount}</p>
                                     </div>
                                     <div>

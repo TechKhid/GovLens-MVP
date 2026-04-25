@@ -65,6 +65,8 @@ func (s *Server) setupRoutes() {
 			r.Post("/", s.handleCreateIssue)
 			r.Post("/{id}/upvote", s.handleUpvote)
 			r.Patch("/{id}/status", s.handleUpdateStatus)
+			r.Patch("/{id}/manage", s.handleManageIssue)
+			r.Post("/{id}/verify", s.handleVerifyIssue)
 			r.Post("/{id}/comments", s.handleCreateComment)
 		})
 	})

@@ -5,7 +5,13 @@
 
 // ── Types ─────────────────────────────────────────────────────
 
-export type Status = 'Reported' | 'Acknowledged' | 'In Progress' | 'Escalated' | 'Resolved';
+export type Status =
+    | 'Reported'
+    | 'Acknowledged'
+    | 'In Progress'
+    | 'Pending Verification'
+    | 'Verified Resolved'
+    | 'Reopened';
 export type Severity = 'Low' | 'Medium' | 'High' | 'Critical';
 export type Sector = 'Infrastructure' | 'Sanitation' | 'Roads' | 'Drainage' | 'Education' | 'Water' | 'Security' | 'Other';
 export type PostType = 'Briefing' | 'Notice' | 'Response';
@@ -35,6 +41,7 @@ export interface Issue {
     status: Status;
     severity: Severity;
     reporter: { name: string; avatar: string };
+    reporterId?: string;
     photos: string[];
     location: { address: string; gps: { lat: number; lng: number } };
     submittedAt: string;
@@ -86,8 +93,9 @@ export const STATUS_COLORS: Record<Status, string> = {
     'Reported': '#6B6B6B',
     'Acknowledged': '#1E3A8A',
     'In Progress': '#F5A623',
-    'Escalated': '#F57C00',
-    'Resolved': '#2E7D32',
+    'Pending Verification': '#7C3AED',
+    'Verified Resolved': '#2E7D32',
+    'Reopened': '#C62828',
 };
 
 export const SEVERITY_COLORS: Record<Severity, string> = {
@@ -125,7 +133,14 @@ export const POST_TYPE_COLORS: Record<PostType, string> = {
     'Response': '#2E7D32',
 };
 
-export const STATUSES: Status[] = ['Reported', 'Acknowledged', 'In Progress', 'Escalated', 'Resolved'];
+export const STATUSES: Status[] = [
+    'Reported',
+    'Acknowledged',
+    'In Progress',
+    'Pending Verification',
+    'Verified Resolved',
+    'Reopened',
+];
 export const SEVERITIES: Severity[] = ['Low', 'Medium', 'High', 'Critical'];
 export const SECTORS: Sector[] = ['Infrastructure', 'Sanitation', 'Roads', 'Drainage', 'Education', 'Water', 'Security', 'Other'];
 export const ZONES = ['Dzorwulu', 'Abelemkpe', 'East Legon', 'Airport Residential', 'Okponglo', 'Roman Ridge'];
@@ -211,7 +226,7 @@ export const mockIssues: Issue[] = [
         description: 'The roof of Block C at East Legon Presbyterian Basic School has sustained severe damage from the last rainstorm. Three classrooms are currently unusable as water leaks directly onto desks and the floor becomes dangerously slippery. Over 120 students are affected and have been relocated to the assembly hall, disrupting the entire school schedule.',
         sector: 'Education',
         zone: 'East Legon',
-        status: 'Escalated',
+        status: 'In Progress',
         severity: 'High',
         reporter: { name: 'Grace Adjei', avatar: 'GA' },
         photos: [],
@@ -219,8 +234,8 @@ export const mockIssues: Issue[] = [
         submittedAt: '2026-01-28T10:15:00Z',
         upvotes: 112,
         comments: [
-            { id: 'c7', author: 'MP Office', avatar: 'MP', content: 'This issue has been escalated to the Ghana Education Service (GES) Metropolitan Directorate. We are pushing for emergency repair funds. The MP has personally visited the school.', timestamp: '2026-02-02T14:00:00Z', likes: 45, isMPOffice: true },
-            { id: 'c8', author: 'Daniel Nartey', avatar: 'DN', content: 'Our children cannot learn like this. Thank you for escalating but we need action not words.', timestamp: '2026-02-03T08:20:00Z', likes: 28, isMPOffice: false },
+            { id: 'c7', author: 'MP Office', avatar: 'MP', content: 'The MP office is preparing a formal referral package for the Ghana Education Service Metropolitan Directorate while pushing for emergency repair funds. GovLens will only mark that referral as live once receipt is confirmed.', timestamp: '2026-02-02T14:00:00Z', likes: 45, isMPOffice: true },
+            { id: 'c8', author: 'Daniel Nartey', avatar: 'DN', content: 'Our children cannot learn like this. Thank you for the update, but we need action not words.', timestamp: '2026-02-03T08:20:00Z', likes: 28, isMPOffice: false },
         ],
         affectedResidents: 1800,
         assignedTo: 'Kofi Mensah',
@@ -228,7 +243,7 @@ export const mockIssues: Issue[] = [
             { status: 'Reported', date: '2026-01-28T10:15:00Z' },
             { status: 'Acknowledged', date: '2026-01-29T11:00:00Z' },
             { status: 'In Progress', date: '2026-01-31T09:00:00Z', note: 'Assessment team deployed' },
-            { status: 'Escalated', date: '2026-02-02T14:00:00Z', note: 'Escalated to GES Metropolitan Directorate' },
+            { status: 'In Progress', date: '2026-02-02T14:00:00Z', note: 'Planned referral to GES Metropolitan Directorate recorded' },
         ],
     },
     {
@@ -237,7 +252,7 @@ export const mockIssues: Issue[] = [
         description: 'Residents of Dzorwulu Residential Area have experienced consistent water supply interruptions over the past two months. Water flows for approximately 3 hours in the early morning (4am–7am) and is completely cut off for the rest of the day. This forces residents to purchase water from tanker services at inflated prices.',
         sector: 'Water',
         zone: 'Dzorwulu',
-        status: 'Resolved',
+        status: 'Verified Resolved',
         severity: 'Low',
         reporter: { name: 'Priscilla Owusu', avatar: 'PO' },
         photos: [],
@@ -253,7 +268,7 @@ export const mockIssues: Issue[] = [
             { status: 'Reported', date: '2026-01-15T07:45:00Z' },
             { status: 'Acknowledged', date: '2026-01-16T10:00:00Z' },
             { status: 'In Progress', date: '2026-01-20T09:00:00Z', note: 'GWCL contacted and investigating' },
-            { status: 'Resolved', date: '2026-02-08T10:00:00Z', note: 'Water supply restored by GWCL' },
+            { status: 'Verified Resolved', date: '2026-02-08T10:00:00Z', note: 'Water supply restored by GWCL' },
         ],
     },
     {
@@ -349,7 +364,7 @@ export const mockIssues: Issue[] = [
         description: 'The concrete barrier wall on the Roman Ridge overpass has developed significant cracks along a 15-metre stretch on the southbound side. Pieces of concrete have been observed falling onto the road below. This is a structural safety hazard that requires immediate engineering assessment.',
         sector: 'Roads',
         zone: 'Roman Ridge',
-        status: 'Escalated',
+        status: 'In Progress',
         severity: 'Critical',
         reporter: { name: 'Charles Mensah-Bonsu', avatar: 'CM' },
         photos: [],
@@ -357,14 +372,14 @@ export const mockIssues: Issue[] = [
         submittedAt: '2026-01-22T13:00:00Z',
         upvotes: 95,
         comments: [
-            { id: 'c13', author: 'MP Office', avatar: 'MP', content: 'This issue has been escalated to the Department of Urban Roads and the Ghana Highway Authority. An emergency structural assessment is underway. We urge residents to exercise caution on this stretch.', timestamp: '2026-01-25T10:00:00Z', likes: 38, isMPOffice: true },
+            { id: 'c13', author: 'MP Office', avatar: 'MP', content: 'The MP office is preparing a referral request for the Department of Urban Roads and the Ghana Highway Authority. GovLens will only show that referral as live once receipt is confirmed. Residents should still exercise caution on this stretch.', timestamp: '2026-01-25T10:00:00Z', likes: 38, isMPOffice: true },
         ],
         affectedResidents: 6800,
         assignedTo: 'Kofi Mensah',
         timeline: [
             { status: 'Reported', date: '2026-01-22T13:00:00Z' },
             { status: 'Acknowledged', date: '2026-01-23T09:00:00Z' },
-            { status: 'Escalated', date: '2026-01-25T10:00:00Z', note: 'Escalated to Dept. of Urban Roads / GHA' },
+            { status: 'In Progress', date: '2026-01-25T10:00:00Z', note: 'Planned referral to Dept. of Urban Roads / GHA recorded' },
         ],
     },
     {
@@ -437,7 +452,7 @@ export const mockIssues: Issue[] = [
         description: 'Gradual road erosion has created a 30cm drop-off at the edge of the road near Abelemkpe residential park. The erosion was caused by rainwater runoff and the lack of a proper shoulder drain. The issue was resolved after the Department of Urban Roads patched and reinforced the affected section.',
         sector: 'Roads',
         zone: 'Abelemkpe',
-        status: 'Resolved',
+        status: 'Verified Resolved',
         severity: 'Low',
         reporter: { name: 'Francis Addo', avatar: 'FA' },
         photos: [],
@@ -451,7 +466,7 @@ export const mockIssues: Issue[] = [
             { status: 'Reported', date: '2026-01-10T14:00:00Z' },
             { status: 'Acknowledged', date: '2026-01-12T10:00:00Z' },
             { status: 'In Progress', date: '2026-01-18T09:00:00Z', note: 'Dept. of Urban Roads repair crew deployed' },
-            { status: 'Resolved', date: '2026-01-25T16:00:00Z', note: 'Road patched and reinforced' },
+            { status: 'Verified Resolved', date: '2026-01-25T16:00:00Z', note: 'Road patched and reinforced' },
         ],
     },
     {

@@ -12,15 +12,17 @@ import (
 )
 
 const createIssue = `-- name: CreateIssue :one
-INSERT INTO issues (user_id, title, description, zone, lat, lng, image_urls)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, user_id, title, description, status, sector, severity, zone, lat, lng, upvotes, image_urls, created_at, updated_at
+INSERT INTO issues (user_id, title, description, sector, severity, zone, lat, lng, image_urls)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, user_id, title, description, status, sector, severity, assignee, internal_notes, zone, lat, lng, upvotes, image_urls, created_at, updated_at
 `
 
 type CreateIssueParams struct {
 	UserID      pgtype.UUID `json:"user_id"`
 	Title       string      `json:"title"`
 	Description string      `json:"description"`
+	Sector      *string     `json:"sector"`
+	Severity    *string     `json:"severity"`
 	Zone        *string     `json:"zone"`
 	Lat         *float64    `json:"lat"`
 	Lng         *float64    `json:"lng"`
@@ -32,6 +34,8 @@ func (q *Queries) CreateIssue(ctx context.Context, arg CreateIssueParams) (Issue
 		arg.UserID,
 		arg.Title,
 		arg.Description,
+		arg.Sector,
+		arg.Severity,
 		arg.Zone,
 		arg.Lat,
 		arg.Lng,
@@ -46,6 +50,8 @@ func (q *Queries) CreateIssue(ctx context.Context, arg CreateIssueParams) (Issue
 		&i.Status,
 		&i.Sector,
 		&i.Severity,
+		&i.Assignee,
+		&i.InternalNotes,
 		&i.Zone,
 		&i.Lat,
 		&i.Lng,
@@ -58,7 +64,7 @@ func (q *Queries) CreateIssue(ctx context.Context, arg CreateIssueParams) (Issue
 }
 
 const getIssue = `-- name: GetIssue :one
-SELECT id, user_id, title, description, status, sector, severity, zone, lat, lng, upvotes, image_urls, created_at, updated_at FROM issues WHERE id = $1
+SELECT id, user_id, title, description, status, sector, severity, assignee, internal_notes, zone, lat, lng, upvotes, image_urls, created_at, updated_at FROM issues WHERE id = $1
 `
 
 func (q *Queries) GetIssue(ctx context.Context, id pgtype.UUID) (Issue, error) {
@@ -72,6 +78,8 @@ func (q *Queries) GetIssue(ctx context.Context, id pgtype.UUID) (Issue, error) {
 		&i.Status,
 		&i.Sector,
 		&i.Severity,
+		&i.Assignee,
+		&i.InternalNotes,
 		&i.Zone,
 		&i.Lat,
 		&i.Lng,
@@ -84,7 +92,7 @@ func (q *Queries) GetIssue(ctx context.Context, id pgtype.UUID) (Issue, error) {
 }
 
 const getIssueWithUpvote = `-- name: GetIssueWithUpvote :one
-SELECT i.id, i.user_id, i.title, i.description, i.status, i.sector, i.severity, i.zone, i.lat, i.lng, i.upvotes, i.image_urls, i.created_at, i.updated_at, 
+SELECT i.id, i.user_id, i.title, i.description, i.status, i.sector, i.severity, i.assignee, i.internal_notes, i.zone, i.lat, i.lng, i.upvotes, i.image_urls, i.created_at, i.updated_at, 
        EXISTS(SELECT 1 FROM issue_upvotes iu WHERE iu.issue_id = i.id AND iu.user_id = $2) AS is_upvoted
 FROM issues i WHERE i.id = $1
 `
@@ -102,6 +110,8 @@ type GetIssueWithUpvoteRow struct {
 	Status      string             `json:"status"`
 	Sector      *string            `json:"sector"`
 	Severity    *string            `json:"severity"`
+	Assignee    *string            `json:"assignee"`
+	InternalNotes *string          `json:"internal_notes"`
 	Zone        *string            `json:"zone"`
 	Lat         *float64           `json:"lat"`
 	Lng         *float64           `json:"lng"`
@@ -123,6 +133,8 @@ func (q *Queries) GetIssueWithUpvote(ctx context.Context, arg GetIssueWithUpvote
 		&i.Status,
 		&i.Sector,
 		&i.Severity,
+		&i.Assignee,
+		&i.InternalNotes,
 		&i.Zone,
 		&i.Lat,
 		&i.Lng,
@@ -136,7 +148,7 @@ func (q *Queries) GetIssueWithUpvote(ctx context.Context, arg GetIssueWithUpvote
 }
 
 const listIssues = `-- name: ListIssues :many
-SELECT id, user_id, title, description, status, sector, severity, zone, lat, lng, upvotes, image_urls, created_at, updated_at FROM issues
+SELECT id, user_id, title, description, status, sector, severity, assignee, internal_notes, zone, lat, lng, upvotes, image_urls, created_at, updated_at FROM issues
 WHERE ($3::TEXT IS NULL OR zone = $3)
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -165,6 +177,8 @@ func (q *Queries) ListIssues(ctx context.Context, arg ListIssuesParams) ([]Issue
 			&i.Status,
 			&i.Sector,
 			&i.Severity,
+			&i.Assignee,
+			&i.InternalNotes,
 			&i.Zone,
 			&i.Lat,
 			&i.Lng,
@@ -184,7 +198,7 @@ func (q *Queries) ListIssues(ctx context.Context, arg ListIssuesParams) ([]Issue
 }
 
 const listIssuesWithUpvote = `-- name: ListIssuesWithUpvote :many
-SELECT i.id, i.user_id, i.title, i.description, i.status, i.sector, i.severity, i.zone, i.lat, i.lng, i.upvotes, i.image_urls, i.created_at, i.updated_at, 
+SELECT i.id, i.user_id, i.title, i.description, i.status, i.sector, i.severity, i.assignee, i.internal_notes, i.zone, i.lat, i.lng, i.upvotes, i.image_urls, i.created_at, i.updated_at, 
        EXISTS(SELECT 1 FROM issue_upvotes iu WHERE iu.issue_id = i.id AND iu.user_id = $3) AS is_upvoted
 FROM issues i
 WHERE ($4::TEXT IS NULL OR i.zone = $4)
@@ -207,6 +221,8 @@ type ListIssuesWithUpvoteRow struct {
 	Status      string             `json:"status"`
 	Sector      *string            `json:"sector"`
 	Severity    *string            `json:"severity"`
+	Assignee    *string            `json:"assignee"`
+	InternalNotes *string          `json:"internal_notes"`
 	Zone        *string            `json:"zone"`
 	Lat         *float64           `json:"lat"`
 	Lng         *float64           `json:"lng"`
@@ -239,6 +255,8 @@ func (q *Queries) ListIssuesWithUpvote(ctx context.Context, arg ListIssuesWithUp
 			&i.Status,
 			&i.Sector,
 			&i.Severity,
+			&i.Assignee,
+			&i.InternalNotes,
 			&i.Zone,
 			&i.Lat,
 			&i.Lng,
@@ -303,6 +321,52 @@ type UpdateIssueStatusParams struct {
 func (q *Queries) UpdateIssueStatus(ctx context.Context, arg UpdateIssueStatusParams) error {
 	_, err := q.db.Exec(ctx, updateIssueStatus, arg.ID, arg.Status)
 	return err
+}
+
+const updateIssueManagement = `-- name: UpdateIssueManagement :one
+UPDATE issues
+SET severity = $2,
+    assignee = $3,
+    internal_notes = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, user_id, title, description, status, sector, severity, assignee, internal_notes, zone, lat, lng, upvotes, image_urls, created_at, updated_at
+`
+
+type UpdateIssueManagementParams struct {
+	ID            pgtype.UUID `json:"id"`
+	Severity      *string     `json:"severity"`
+	Assignee      *string     `json:"assignee"`
+	InternalNotes *string     `json:"internal_notes"`
+}
+
+func (q *Queries) UpdateIssueManagement(ctx context.Context, arg UpdateIssueManagementParams) (Issue, error) {
+	row := q.db.QueryRow(ctx, updateIssueManagement,
+		arg.ID,
+		arg.Severity,
+		arg.Assignee,
+		arg.InternalNotes,
+	)
+	var i Issue
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Title,
+		&i.Description,
+		&i.Status,
+		&i.Sector,
+		&i.Severity,
+		&i.Assignee,
+		&i.InternalNotes,
+		&i.Zone,
+		&i.Lat,
+		&i.Lng,
+		&i.Upvotes,
+		&i.ImageUrls,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const upvoteIssue = `-- name: UpvoteIssue :exec

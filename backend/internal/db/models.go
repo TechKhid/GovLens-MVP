@@ -22,6 +22,10 @@ type Briefing struct {
 	Title       string             `json:"title"`
 	Content     string             `json:"content"`
 	Zone        *string            `json:"zone"`
+	PostType    string             `json:"post_type"`
+	Sectors     []string           `json:"sectors"`
+	Pinned      bool               `json:"pinned"`
+	Views       int32              `json:"views"`
 	PublishedAt pgtype.Timestamptz `json:"published_at"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
@@ -58,6 +62,8 @@ type Issue struct {
 	Status      string             `json:"status"`
 	Sector      *string            `json:"sector"`
 	Severity    *string            `json:"severity"`
+	Assignee    *string            `json:"assignee"`
+	InternalNotes *string          `json:"internal_notes"`
 	Zone        *string            `json:"zone"`
 	Lat         *float64           `json:"lat"`
 	Lng         *float64           `json:"lng"`

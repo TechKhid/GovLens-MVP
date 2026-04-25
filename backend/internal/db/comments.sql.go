@@ -37,7 +37,7 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (C
 }
 
 const listCommentsByIssue = `-- name: ListCommentsByIssue :many
-SELECT c.id, c.issue_id, c.user_id, c.content, c.created_at, u.name as user_name
+SELECT c.id, c.issue_id, c.user_id, c.content, c.created_at, u.name as user_name, u.role as user_role
 FROM comments c
 JOIN users u ON c.user_id = u.id
 WHERE c.issue_id = $1
@@ -51,6 +51,7 @@ type ListCommentsByIssueRow struct {
 	Content   string             `json:"content"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UserName  string             `json:"user_name"`
+	UserRole  string             `json:"user_role"`
 }
 
 func (q *Queries) ListCommentsByIssue(ctx context.Context, issueID pgtype.UUID) ([]ListCommentsByIssueRow, error) {
@@ -69,6 +70,7 @@ func (q *Queries) ListCommentsByIssue(ctx context.Context, issueID pgtype.UUID) 
 			&i.Content,
 			&i.CreatedAt,
 			&i.UserName,
+			&i.UserRole,
 		); err != nil {
 			return nil, err
 		}

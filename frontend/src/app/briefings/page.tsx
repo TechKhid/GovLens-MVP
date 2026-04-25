@@ -30,9 +30,9 @@ export default function BriefingsPage() {
         return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
 
-    const handlePublish = () => {
+    const handlePublish = async () => {
         if (!composeTitle.trim() || !composeBody.trim()) return;
-        addBriefing({
+        await addBriefing({
             type: composeType,
             title: composeTitle.trim(),
             body: composeBody.trim(),

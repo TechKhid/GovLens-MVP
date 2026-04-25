@@ -1,0 +1,22 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "G GovLens" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e7]: G
+          - generic [ref=e8]: GovLens
+        - generic [ref=e9]: GovLens
+      - generic [ref=e10]:
+        - link "Issues" [ref=e11] [cursor=pointer]:
+          - /url: /
+        - link "Heatmap" [ref=e12] [cursor=pointer]:
+          - /url: /heatmap
+        - link "Briefings" [ref=e13] [cursor=pointer]:
+          - /url: /briefings
+        - link "MP Profile" [ref=e14] [cursor=pointer]:
+          - /url: /mp-profile
+          - text: MP Profile
+      - link "Sign in" [ref=e17] [cursor=pointer]:
+        - /url: /login
+  - main [ref=e18]

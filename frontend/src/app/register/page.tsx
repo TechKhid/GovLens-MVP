@@ -41,6 +41,7 @@ function RegisterForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState<'citizen' | 'mp'>('citizen');
+    const [inviteCode, setInviteCode] = useState('');
     
     // Dynamic geographical data states
     const [regions, setRegions] = useState<{ id: string, name: string }[]>([]);
@@ -156,6 +157,10 @@ function RegisterForm() {
             setError('Political Party is required for MPs.');
             return;
         }
+        if (role === 'mp' && !inviteCode.trim()) {
+            setError('MP onboarding requires an invite code or whitelist approval.');
+            return;
+        }
 
         setSubmitting(true);
         try {
@@ -164,6 +169,7 @@ function RegisterForm() {
                 email: email.trim(),
                 password,
                 role,
+                invite_code: inviteCode.trim(),
                 constituency: constituencyName.trim(),
                 ...(role === 'mp' && {
                     party: party.trim(),
@@ -181,6 +187,7 @@ function RegisterForm() {
                 formData.append('email', registerPayload.email);
                 formData.append('password', registerPayload.password);
                 formData.append('role', registerPayload.role);
+                formData.append('invite_code', registerPayload.invite_code);
                 formData.append('constituency', registerPayload.constituency);
                 formData.append('party', party.trim());
                 formData.append('phone', phone.trim());
@@ -232,6 +239,12 @@ function RegisterForm() {
                     Join GovLens to connect directly with your community.
                 </p>
 
+                {role === 'mp' && (
+                    <div className="mb-6 border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-body text-amber-900">
+                        MP onboarding is gated. Use an approved invite code or registered whitelist email to complete verification.
+                    </div>
+                )}
+
                 {/* Role Toggle */}
                 <div className="flex bg-background border border-border p-1 mb-6 rounded-md">
                     <button
@@ -279,6 +292,26 @@ function RegisterForm() {
                             disabled={submitting}
                         />
                     </div>
+
+                    {role === 'mp' && (
+                        <div>
+                            <label className="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2 font-body">
+                                Invite Code
+                            </label>
+                            <input
+                                type="text"
+                                value={inviteCode}
+                                onChange={(e) => setInviteCode(e.target.value)}
+                                required={role === 'mp'}
+                                className="w-full px-4 py-2 border border-border focus:border-primary-text focus:ring-1 focus:ring-primary-text outline-none transition-all font-body text-sm"
+                                placeholder="Enter MP invite code"
+                                disabled={submitting}
+                            />
+                            <p className="mt-2 text-xs text-muted-text font-body">
+                                Public MP self-registration is disabled for trust and verification reasons.
+                            </p>
+                        </div>
+                    )}
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>

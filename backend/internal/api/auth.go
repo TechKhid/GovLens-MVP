@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -43,6 +44,7 @@ type RegisterRequest struct {
 	Email        string `json:"email"`
 	Password     string `json:"password"`
 	Role         string `json:"role"`
+	InviteCode   string `json:"invite_code"`
 	Constituency string `json:"constituency"`
 	Party        string `json:"party"`
 	TermStart    string `json:"term_start"`
@@ -72,6 +74,7 @@ func sanitizeRegisterRequest(req RegisterRequest) RegisterRequest {
 	req.Name = strings.TrimSpace(req.Name)
 	req.Email = strings.TrimSpace(req.Email)
 	req.Role = strings.ToLower(strings.TrimSpace(req.Role))
+	req.InviteCode = strings.TrimSpace(req.InviteCode)
 	req.Constituency = strings.TrimSpace(req.Constituency)
 	req.Party = strings.TrimSpace(req.Party)
 	req.TermStart = strings.TrimSpace(req.TermStart)
@@ -107,6 +110,7 @@ func (s *Server) parseMultipartRegisterRequest(w http.ResponseWriter, r *http.Re
 		Email:        r.FormValue("email"),
 		Password:     r.FormValue("password"),
 		Role:         r.FormValue("role"),
+		InviteCode:   r.FormValue("invite_code"),
 		Constituency: r.FormValue("constituency"),
 		Party:        r.FormValue("party"),
 		TermStart:    r.FormValue("term_start"),
@@ -188,6 +192,47 @@ func (s *Server) saveMPAvatar(avatarDir, avatarID string, header *multipart.File
 	return s.uploadedFileURL(filepath.Join("mps", avatarID, fileName)), nil
 }
 
+func parseMPWhitelist(raw string) map[string]struct{} {
+	whitelist := make(map[string]struct{})
+	for _, item := range strings.Split(raw, ",") {
+		email := strings.ToLower(strings.TrimSpace(item))
+		if email == "" {
+			continue
+		}
+		whitelist[email] = struct{}{}
+	}
+	return whitelist
+}
+
+func resolveRegistrationRole(
+	requestedRole string,
+	email string,
+	inviteCode string,
+	configuredInviteCode string,
+	whitelist map[string]struct{},
+) (string, error) {
+	role := strings.ToLower(strings.TrimSpace(requestedRole))
+	if role == "" || role == "citizen" {
+		return "citizen", nil
+	}
+	if role != "mp" {
+		return "citizen", nil
+	}
+
+	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
+	if _, ok := whitelist[normalizedEmail]; ok {
+		return "mp", nil
+	}
+
+	trimmedInviteCode := strings.TrimSpace(inviteCode)
+	if configuredInviteCode != "" &&
+		subtle.ConstantTimeCompare([]byte(configuredInviteCode), []byte(trimmedInviteCode)) == 1 {
+		return "mp", nil
+	}
+
+	return "", fmt.Errorf("MP onboarding is invite-only. Please contact GovLens for verification")
+}
+
 // POST /auth/register
 func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 	req, cleanupUploads, err := s.parseRegisterRequest(w, r)
@@ -224,9 +269,16 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		constituencyPtr = &req.Constituency
 	}
 
-	role := req.Role
-	if role != "mp" {
-		role = "citizen"
+	role, err := resolveRegistrationRole(
+		req.Role,
+		req.Email,
+		req.InviteCode,
+		strings.TrimSpace(os.Getenv("MP_INVITE_CODE")),
+		parseMPWhitelist(os.Getenv("MP_WHITELIST_EMAILS")),
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
 	}
 
 	user, err := s.Store.CreateUser(r.Context(), db.CreateUserParams{

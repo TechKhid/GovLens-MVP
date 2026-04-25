@@ -7,7 +7,7 @@ import (
 )
 
 const listBriefings = `-- name: ListBriefings :many
-SELECT id, mp_id, title, content, zone, published_at, created_at
+SELECT id, mp_id, title, content, zone, post_type, sectors, pinned, views, published_at, created_at
 FROM briefings
 ORDER BY published_at DESC
 LIMIT $1 OFFSET $2
@@ -33,6 +33,10 @@ func (q *Queries) ListBriefings(ctx context.Context, arg ListBriefingsParams) ([
 			&b.Title,
 			&b.Content,
 			&b.Zone,
+			&b.PostType,
+			&b.Sectors,
+			&b.Pinned,
+			&b.Views,
 			&b.PublishedAt,
 			&b.CreatedAt,
 		); err != nil {
@@ -44,16 +48,20 @@ func (q *Queries) ListBriefings(ctx context.Context, arg ListBriefingsParams) ([
 }
 
 const createBriefing = `-- name: CreateBriefing :one
-INSERT INTO briefings (mp_id, title, content, zone)
-VALUES ($1, $2, $3, $4)
-RETURNING id, mp_id, title, content, zone, published_at, created_at
+INSERT INTO briefings (mp_id, title, content, zone, post_type, sectors, pinned, views)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, mp_id, title, content, zone, post_type, sectors, pinned, views, published_at, created_at
 `
 
 type CreateBriefingParams struct {
-	MpID    pgtype.UUID `json:"mp_id"`
-	Title   string      `json:"title"`
-	Content string      `json:"content"`
-	Zone    pgtype.Text `json:"zone"`
+	MpID     pgtype.UUID `json:"mp_id"`
+	Title    string      `json:"title"`
+	Content  string      `json:"content"`
+	Zone     pgtype.Text `json:"zone"`
+	PostType string      `json:"post_type"`
+	Sectors  []string    `json:"sectors"`
+	Pinned   bool        `json:"pinned"`
+	Views    int32       `json:"views"`
 }
 
 func (q *Queries) CreateBriefing(ctx context.Context, arg CreateBriefingParams) (Briefing, error) {
@@ -62,6 +70,10 @@ func (q *Queries) CreateBriefing(ctx context.Context, arg CreateBriefingParams) 
 		arg.Title,
 		arg.Content,
 		arg.Zone,
+		arg.PostType,
+		arg.Sectors,
+		arg.Pinned,
+		arg.Views,
 	)
 	var b Briefing
 	err := row.Scan(
@@ -70,6 +82,10 @@ func (q *Queries) CreateBriefing(ctx context.Context, arg CreateBriefingParams) 
 		&b.Title,
 		&b.Content,
 		&b.Zone,
+		&b.PostType,
+		&b.Sectors,
+		&b.Pinned,
+		&b.Views,
 		&b.PublishedAt,
 		&b.CreatedAt,
 	)

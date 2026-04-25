@@ -25,6 +25,8 @@ interface ApiIssue {
     status: string;
     sector?: string | null;
     severity?: string | null;
+    assignee?: string | null;
+    internal_notes?: string | null;
     zone?: string | null;
     lat?: number | null;
     lng?: number | null;
@@ -38,6 +40,30 @@ interface ApiIssue {
 
 interface ApiIssueWithUpvote extends ApiIssue {
     has_upvoted: boolean;
+}
+
+interface ApiComment {
+    id: string;
+    issue_id: string;
+    user_id: string;
+    content: string;
+    created_at: string;
+    user_name: string;
+    user_role?: string;
+}
+
+interface ApiBriefing {
+    id: string;
+    mp_id: string;
+    title: string;
+    content: string;
+    zone?: string | null;
+    post_type?: string | null;
+    sectors?: string[] | null;
+    pinned?: boolean | null;
+    views?: number | null;
+    published_at?: string | null;
+    created_at: string;
 }
 
 function titleCase(value: string): string {
@@ -94,6 +120,7 @@ function mapApiIssue(a: ApiIssue): Issue {
         status: mapStatus(a.status),
         severity: normalizeSeverity(a.severity),
         reporter: { name: 'Citizen', avatar: '' },
+        reporterId: a.user_id,
         photos: (a.image_urls ?? []).map(resolveApiUrl),
         location: {
             address: a.zone ?? '',
@@ -103,6 +130,8 @@ function mapApiIssue(a: ApiIssue): Issue {
         upvotes: a.upvotes ?? 0,
         comments: [],
         affectedResidents: 0,
+        assignedTo: a.assignee ?? undefined,
+        internalNotes: a.internal_notes ?? undefined,
         timeline: [{ status: mapStatus(a.status), date: a.created_at }],
     };
 }
@@ -110,12 +139,68 @@ function mapApiIssue(a: ApiIssue): Issue {
 function mapStatus(s: string): Issue['status'] {
     const map: Record<string, Issue['status']> = {
         open: 'Reported',
-        'in-progress': 'In Progress',
-        resolved: 'Resolved',
         acknowledged: 'Acknowledged',
-        escalated: 'Escalated',
+        'in-progress': 'In Progress',
+        escalated: 'In Progress',
+        'pending-verification': 'Pending Verification',
+        'verified-resolved': 'Verified Resolved',
+        resolved: 'Verified Resolved',
+        reopened: 'Reopened',
     };
     return map[s] ?? 'Reported';
+}
+
+function toApiStatus(status: Issue['status']): string {
+    const map: Record<Issue['status'], string> = {
+        'Reported': 'open',
+        'Acknowledged': 'acknowledged',
+        'In Progress': 'in-progress',
+        'Pending Verification': 'pending-verification',
+        'Verified Resolved': 'verified-resolved',
+        'Reopened': 'reopened',
+    };
+    return map[status];
+}
+
+function mapApiComment(comment: ApiComment): Comment {
+    const normalizedRole = comment.user_role?.toLowerCase();
+    const isMPOffice = normalizedRole === 'mp' || normalizedRole === 'admin' || normalizedRole === 'sysadmin'
+        || comment.user_name.toLowerCase().includes('mp')
+        || comment.user_name.toLowerCase().includes('hon.');
+    return {
+        id: comment.id,
+        author: isMPOffice ? 'MP Office' : comment.user_name,
+        avatar: isMPOffice ? 'MP' : comment.user_name.slice(0, 2).toUpperCase(),
+        content: comment.content,
+        timestamp: comment.created_at,
+        likes: 0,
+        isMPOffice,
+    };
+}
+
+function normalizePostType(postType?: string | null): BriefingPost['type'] {
+    const normalized = postType?.trim().toLowerCase();
+    if (normalized === 'notice') return 'Notice';
+    if (normalized === 'response') return 'Response';
+    return 'Briefing';
+}
+
+function mapApiBriefing(briefing: ApiBriefing): BriefingPost {
+    const sectors: BriefingPost['sectors'] = briefing.sectors?.length
+        ? briefing.sectors.map(normalizeSector)
+        : ['Other'];
+
+    return {
+        id: briefing.id,
+        type: normalizePostType(briefing.post_type),
+        title: briefing.title,
+        body: briefing.content,
+        sectors,
+        date: briefing.published_at ?? briefing.created_at,
+        views: briefing.views ?? 0,
+        pinned: briefing.pinned ?? false,
+        author: { name: 'MP Office', avatar: 'MP' },
+    };
 }
 
 // ── Context shape ──────────────────────────────────────────────────────────
@@ -129,14 +214,17 @@ interface DataStoreContextType {
 
     addIssue: (issue: Omit<Issue, 'id'> & { lat?: number; lng?: number; photoFiles?: File[] }) => Promise<string>;
     updateIssue: (id: string, patch: Partial<Issue>) => void;
-    addComment: (issueId: string, comment: Omit<Comment, 'id'>) => void;
+    addComment: (issueId: string, comment: Omit<Comment, 'id'>) => Promise<void>;
+    loadComments: (issueId: string) => Promise<void>;
+    changeIssueStatus: (issueId: string, status: Issue['status'], note?: string) => Promise<void>;
+    saveIssueManagement: (issueId: string, updates: Pick<Issue, 'severity' | 'assignedTo' | 'internalNotes'>) => Promise<void>;
+    verifyIssue: (issueId: string, action: 'confirm' | 'dispute', comment?: string) => Promise<void>;
     toggleUpvote: (id: string) => Promise<void>;
     isUpvoted: (id: string) => boolean;
     refreshIssues: () => Promise<void>;
 
-    addBriefing: (post: Omit<BriefingPost, 'id'>) => string;
+    addBriefing: (post: Omit<BriefingPost, 'id'>) => Promise<string>;
     nextIssueId: () => string;
-    nextBriefingId: () => string;
 }
 
 const DataStoreContext = createContext<DataStoreContextType | undefined>(undefined);
@@ -149,7 +237,6 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     const [briefings, setBriefings] = useState<BriefingPost[]>([]);
     const [upvotedIds, setUpvotedIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
-    const [briefingCounter, setBriefingCounter] = useState(0);
 
     // ── Fetch issues from the API ──────────────────────────────────────────
 
@@ -175,19 +262,31 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
+    const refreshBriefings = useCallback(async () => {
+        try {
+            const data = await api.get<ApiBriefing[]>('/briefings');
+            setBriefings(data.map(mapApiBriefing));
+        } catch (err) {
+            console.error('Failed to fetch briefings:', err);
+        }
+    }, []);
+
     useEffect(() => {
-        refreshIssues();
-    }, [refreshIssues, user?.sub]);
+        void refreshIssues();
+        void refreshBriefings();
+    }, [refreshBriefings, refreshIssues, user?.sub]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return undefined;
 
         const handleFocus = () => {
             void refreshIssues();
+            void refreshBriefings();
         };
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
                 void refreshIssues();
+                void refreshBriefings();
             }
         };
 
@@ -197,7 +296,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
             window.removeEventListener('focus', handleFocus);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [refreshIssues]);
+    }, [refreshBriefings, refreshIssues]);
 
     // ── Issue actions ──────────────────────────────────────────────────────
 
@@ -218,6 +317,8 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
                         const formData = new FormData();
                         formData.append('title', body.title);
                         formData.append('description', body.description);
+                        formData.append('sector', body.sector);
+                        formData.append('severity', body.severity);
                         formData.append('zone', body.zone);
                         formData.append('lat', String(body.lat));
                         formData.append('lng', String(body.lng));
@@ -244,7 +345,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
         );
     }, []);
 
-    const addComment = useCallback((issueId: string, commentData: Omit<Comment, 'id'>) => {
+    const appendLocalComment = useCallback((issueId: string, commentData: Omit<Comment, 'id'>) => {
         const commentId = `C-${Date.now()}`;
         const newComment: Comment = { ...commentData, id: commentId };
         setIssues((prev) =>
@@ -255,6 +356,110 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
             )
         );
     }, []);
+
+    const loadComments = useCallback(async (issueId: string) => {
+        try {
+            const comments = await api.get<ApiComment[]>(`/issues/${issueId}/comments`);
+            setIssues((prev) =>
+                prev.map((issue) =>
+                    issue.id === issueId
+                        ? { ...issue, comments: comments.map(mapApiComment) }
+                        : issue
+                )
+            );
+        } catch (err) {
+            console.error('Failed to load comments:', err);
+        }
+    }, []);
+
+    const addComment = useCallback(async (issueId: string, commentData: Omit<Comment, 'id'>) => {
+        const content = commentData.content.trim();
+        if (!content) {
+            throw new Error('Comment content is required.');
+        }
+
+        await api.post(`/issues/${issueId}/comments`, { content });
+        appendLocalComment(issueId, commentData);
+        await loadComments(issueId);
+    }, [appendLocalComment, loadComments]);
+
+    const applyStatusLocally = useCallback((issueId: string, status: Issue['status'], note?: string) => {
+        setIssues((prev) =>
+            prev.map((issue) => {
+                if (issue.id !== issueId) return issue;
+                const timeline = [
+                    ...issue.timeline,
+                    {
+                        status,
+                        date: new Date().toISOString(),
+                        ...(note ? { note } : {}),
+                    },
+                ];
+                return { ...issue, status, timeline };
+            })
+        );
+    }, []);
+
+    const changeIssueStatus = useCallback(async (issueId: string, status: Issue['status'], note?: string) => {
+        await api.patch(`/issues/${issueId}/status`, {
+            status: toApiStatus(status),
+            note: note?.trim() || undefined,
+        });
+        applyStatusLocally(issueId, status, note);
+        if (note?.trim()) {
+            appendLocalComment(issueId, {
+                author: user?.role === 'mp' ? 'MP Office' : user?.name || 'You',
+                avatar: user?.role === 'mp' ? 'MP' : 'YO',
+                content: note.trim(),
+                timestamp: new Date().toISOString(),
+                likes: 0,
+                isMPOffice: user?.role === 'mp',
+            });
+        }
+    }, [appendLocalComment, applyStatusLocally, user?.name, user?.role]);
+
+    const saveIssueManagement = useCallback(async (
+        issueId: string,
+        updates: Pick<Issue, 'severity' | 'assignedTo' | 'internalNotes'>
+    ) => {
+        const updated = await api.patch<ApiIssue>(`/issues/${issueId}/manage`, {
+            severity: updates.severity,
+            assignee: updates.assignedTo ?? '',
+            internal_note: updates.internalNotes ?? '',
+        });
+
+        setIssues((prev) =>
+            prev.map((issue) =>
+                issue.id === issueId
+                    ? {
+                        ...issue,
+                        severity: normalizeSeverity(updated.severity),
+                        assignedTo: updated.assignee ?? undefined,
+                        internalNotes: updated.internal_notes ?? undefined,
+                    }
+                    : issue
+            )
+        );
+    }, []);
+
+    const verifyIssue = useCallback(async (issueId: string, action: 'confirm' | 'dispute', comment?: string) => {
+        await api.post(`/issues/${issueId}/verify`, {
+            action,
+            comment: comment?.trim() || undefined,
+        });
+        const nextStatus: Issue['status'] = action === 'confirm' ? 'Verified Resolved' : 'Reopened';
+        applyStatusLocally(issueId, nextStatus, comment);
+        if (action === 'dispute' || comment?.trim()) {
+            appendLocalComment(issueId, {
+                author: user?.name || 'You',
+                avatar: 'YO',
+                content: comment?.trim() || 'Reporter disputed the claimed resolution.',
+                timestamp: new Date().toISOString(),
+                likes: 0,
+                isMPOffice: false,
+            });
+        }
+    }, [appendLocalComment, applyStatusLocally, user?.name]);
 
     // ── Upvote — optimistic UI + API call ─────────────────────────────────
 
@@ -300,32 +505,21 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
 
     const isUpvoted = useCallback((id: string) => upvotedIds.has(id), [upvotedIds]);
 
-    // ── Briefing actions (still local until backend supports them) ──────────
-
-    const addBriefing = useCallback((postData: Omit<BriefingPost, 'id'>): string => {
-        let id = '';
-        setBriefingCounter((c) => {
-            const next = c + 1;
-            id = `B-${String(next).padStart(3, '0')}`;
-            return next;
+    const addBriefing = useCallback(async (postData: Omit<BriefingPost, 'id'>): Promise<string> => {
+        const created = await api.post<ApiBriefing>('/briefings', {
+            title: postData.title,
+            content: postData.body,
+            zone: '',
+            post_type: postData.type,
+            sectors: postData.sectors,
+            pinned: postData.pinned,
         });
-        setBriefings((prev) => [
-            { ...postData, id: id || `B-${String(prev.length + 1).padStart(3, '0')}` },
-            ...prev,
-        ]);
-        return id;
+        const mapped = mapApiBriefing(created);
+        setBriefings((prev) => [mapped, ...prev]);
+        return created.id;
     }, []);
 
     const nextIssueId = useCallback(() => `GL-new-${Date.now()}`, []);
-    const nextBriefingId = useCallback(() => {
-        let id = '';
-        setBriefingCounter((c) => {
-            const next = c + 1;
-            id = `B-${String(next).padStart(3, '0')}`;
-            return next;
-        });
-        return id;
-    }, []);
 
     // ── Zones derived from real issues (grouped by zone name) ──────────────
 
@@ -335,7 +529,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
             if (!issue.zone) return;
             if (!acc[issue.zone]) acc[issue.zone] = { issueCount: 0, resolvedCount: 0 };
             acc[issue.zone].issueCount += 1;
-            if (issue.status === 'Resolved') acc[issue.zone].resolvedCount += 1;
+            if (issue.status === 'Verified Resolved') acc[issue.zone].resolvedCount += 1;
         });
         return Object.entries(acc).map(([name, counts]) => ({
             id: name.toLowerCase().replace(/\s+/g, '-'),
@@ -358,17 +552,21 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
             addIssue,
             updateIssue,
             addComment,
+            loadComments,
+            changeIssueStatus,
+            saveIssueManagement,
+            verifyIssue,
             toggleUpvote,
             isUpvoted,
             refreshIssues,
             addBriefing,
             nextIssueId,
-            nextBriefingId,
         }),
         [
             issues, briefings, zones, upvotedIds, loading,
-            addIssue, updateIssue, addComment, toggleUpvote,
-            isUpvoted, refreshIssues, addBriefing, nextIssueId, nextBriefingId,
+            addIssue, updateIssue, addComment, loadComments, changeIssueStatus,
+            saveIssueManagement, verifyIssue, toggleUpvote, isUpvoted, refreshIssues,
+            addBriefing, nextIssueId,
         ]
     );
 

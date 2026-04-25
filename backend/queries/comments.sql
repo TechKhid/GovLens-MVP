@@ -4,7 +4,7 @@ VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: ListCommentsByIssue :many
-SELECT c.*, u.name as user_name
+SELECT c.*, u.name as user_name, u.role as user_role
 FROM comments c
 JOIN users u ON c.user_id = u.id
 WHERE c.issue_id = $1

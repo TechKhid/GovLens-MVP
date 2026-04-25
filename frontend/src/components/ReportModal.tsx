@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Sector, SECTORS, SECTOR_COLORS, Issue } from '@/lib/mockData';
 import { useDataStore } from '@/context/DataStoreContext';
 import { useAuth } from '@/context/RoleContext';
 import { getConstituencyCenter } from '@/lib/constituency-centers';
+import { api } from '@/lib/api';
+import { findSimilarIssues, SimilarIssueHint } from '@/lib/issueIntelligence';
 
 const PinLocationMap = dynamic(() => import('./PinLocationMap'), {
     ssr: false,
@@ -22,16 +24,25 @@ interface PhotoUpload {
     previewUrl: string;
 }
 
+interface ClassificationResponse {
+    sector: string;
+    severity: string;
+    sector_scores?: Record<string, number>;
+}
+
 // Ghana center — overridden by constituency on open
 const GHANA_LAT = 7.9465;
 const GHANA_LNG = -1.0232;
 
 export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
-    const { addIssue } = useDataStore();
+    const { addIssue, issues } = useDataStore();
     const { user } = useAuth();
     const [step, setStep] = useState(1);
     const [title, setTitle] = useState('');
     const [sector, setSector] = useState<Sector | null>(null);
+    const [suggestedSector, setSuggestedSector] = useState<Sector | null>(null);
+    const [suggestedConfidence, setSuggestedConfidence] = useState<number | null>(null);
+    const [suggestedSeverity, setSuggestedSeverity] = useState<Issue['severity']>('Medium');
     const [description, setDescription] = useState('');
     const [address, setAddress] = useState('');
     const [zone, setZone] = useState('');
@@ -40,6 +51,15 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
     const [photoUploads, setPhotoUploads] = useState<PhotoUpload[]>([]);
     const [photoError, setPhotoError] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [classificationLoading, setClassificationLoading] = useState(false);
+    const [classificationError, setClassificationError] = useState('');
+    const similarIssueHints = useMemo(() => findSimilarIssues(issues, {
+        title,
+        description,
+        address,
+        zone,
+        sector: sector ?? suggestedSector,
+    }), [address, description, issues, sector, suggestedSector, title, zone]);
 
     // Fly map pin to the user's constituency center when the modal opens
     useEffect(() => {
@@ -58,10 +78,43 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
 
     const canProceed = () => {
         switch (step) {
-            case 1: return title.trim() !== '' && sector !== null;
+            case 1: return title.trim() !== '';
             case 2: return address.trim() !== '';
             case 3: return true; // Photos are optional
             default: return true;
+        }
+    };
+
+    const classifyDraft = async () => {
+        if (!title.trim()) return;
+
+        setClassificationLoading(true);
+        setClassificationError('');
+        try {
+            const result = await api.post<ClassificationResponse>('/ml/classify', {
+                title: title.trim(),
+                description: description.trim(),
+            });
+
+            const normalizedSector = SECTORS.find(
+                (option) => option.toLowerCase() === String(result.sector).toLowerCase()
+            ) ?? 'Other';
+            const normalizedSeverity = (['Low', 'Medium', 'High', 'Critical'] as const).find(
+                (option) => option.toLowerCase() === String(result.severity).toLowerCase()
+            ) ?? 'Medium';
+
+            setSuggestedSector(normalizedSector);
+            setSuggestedSeverity(normalizedSeverity);
+            setSector((current) => current ?? normalizedSector);
+            setSuggestedConfidence(
+                result.sector_scores?.[String(result.sector).toLowerCase()] ?? null
+            );
+        } catch (err) {
+            setClassificationError(err instanceof Error ? err.message : 'AI classification unavailable right now.');
+            setSuggestedSector(null);
+            setSuggestedConfidence(null);
+        } finally {
+            setClassificationLoading(false);
         }
     };
 
@@ -126,11 +179,16 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
         setStep(1);
         setTitle('');
         setSector(null);
+        setSuggestedSector(null);
+        setSuggestedConfidence(null);
+        setSuggestedSeverity('Medium');
         setDescription('');
         setAddress('');
         setZone('');
         clearPhotoUploads();
         setSubmitting(false);
+        setClassificationLoading(false);
+        setClassificationError('');
         // Reset to constituency center (or Ghana center if unknown)
         const entry = user?.constituency ? getConstituencyCenter(user.constituency) : null;
         setPinLat(entry?.lat ?? GHANA_LAT);
@@ -139,6 +197,12 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
     };
 
     const handleContinue = async () => {
+        if (step === 1) {
+            await classifyDraft();
+            setStep(2);
+            return;
+        }
+
         if (step !== 3) {
             setStep(step + 1);
             return;
@@ -152,10 +216,10 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
             await addIssue({
                 title,
                 description: description || title,
-                sector: sector!,
+                sector: sector ?? suggestedSector ?? 'Other',
                 zone: zone || user?.constituency || '',
                 status: 'Reported',
-                severity: 'Medium',
+                severity: suggestedSeverity,
                 reporter: { name: 'You', avatar: 'YO' },
                 photos: [],
                 photoFiles: photoUploads.map((upload) => upload.file),
@@ -240,7 +304,55 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                             </div>
 
                             <div>
-                                <label className="section-label block mb-2">Sector *</label>
+                                <label className="section-label block mb-2">AI-Suggested Sector</label>
+                                <div className="mb-3 p-3 border border-border rounded bg-background">
+                                    {classificationLoading ? (
+                                        <p className="text-sm font-body text-muted-text">
+                                            Classifying your issue...
+                                        </p>
+                                    ) : suggestedSector ? (
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div>
+                                                <p className="text-sm font-body font-medium text-primary-text">
+                                                    {suggestedSector}
+                                                </p>
+                                                <p className="text-xs text-muted-text font-body mt-1">
+                                                    Severity: {suggestedSeverity}
+                                                    {suggestedConfidence !== null
+                                                        ? ` · confidence ${Math.round(suggestedConfidence * 100)}%`
+                                                        : ''}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => void classifyDraft()}
+                                                className="text-xs font-body text-primary-text hover:underline"
+                                            >
+                                                Refresh AI
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p className="text-sm font-body text-muted-text">
+                                                GovLens will classify this issue automatically before submission.
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => void classifyDraft()}
+                                                className="text-xs font-body text-primary-text hover:underline"
+                                            >
+                                                Run AI now
+                                            </button>
+                                        </div>
+                                    )}
+                                    {classificationError && (
+                                        <p className="text-xs text-status-urgent font-body mt-2">
+                                            {classificationError}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <label className="section-label block mb-2">Review or Override</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     {SECTORS.map((s) => {
                                         const isSelected = sector === s;
@@ -275,6 +387,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                                     className="textarea-field h-24"
                                 />
                             </div>
+
+                            <SimilarIssueHints hints={similarIssueHints} />
                         </div>
                     )}
 
@@ -303,6 +417,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                                 />
                                 <p className="text-[10px] text-muted-text font-body mt-1">Enter any local area, neighbourhood or landmark name</p>
                             </div>
+
+                            <SimilarIssueHints hints={similarIssueHints} />
 
                             <div>
                                 <label className="section-label block mb-2">Pin Location</label>
@@ -384,13 +500,13 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                             <div className="card p-4 text-left mb-4">
                                 <p className="text-sm font-body font-medium mb-1">{title}</p>
                                 <div className="flex items-center gap-2">
-                                    {sector && (
+                                    {(sector ?? suggestedSector) && (
                                         <span className="pill bg-background">
                                             <span
                                                 className="w-2 h-2 rounded-full"
-                                                style={{ backgroundColor: SECTOR_COLORS[sector] }}
+                                                style={{ backgroundColor: SECTOR_COLORS[(sector ?? suggestedSector)!] }}
                                             />
-                                            {sector}
+                                            {sector ?? suggestedSector}
                                         </span>
                                     )}
                                     {zone && (
@@ -425,6 +541,51 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                         </button>
                     )}
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function SimilarIssueHints({ hints }: { hints: SimilarIssueHint[] }) {
+    if (hints.length === 0) return null;
+
+    return (
+        <div className="rounded border border-amber-200 bg-amber-50 p-3 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                    <p className="text-sm font-body font-medium text-primary-text">
+                        Similar issues already reported
+                    </p>
+                    <p className="text-xs text-muted-text font-body mt-1">
+                        GovLens found nearby reports with overlapping wording or routing. You can still submit if your case adds new evidence, a new location, or a more urgent update.
+                    </p>
+                </div>
+                <span className="pill text-[10px] bg-white text-amber-700 border border-amber-200">
+                    AI hint
+                </span>
+            </div>
+
+            <div className="space-y-2">
+                {hints.map((hint) => (
+                    <div key={hint.issue.id} className="rounded border border-white bg-white px-3 py-2">
+                        <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-body font-medium text-primary-text">
+                                {hint.issue.title}
+                            </p>
+                            <span className="text-[10px] font-mono text-amber-700">
+                                {hint.label}
+                            </span>
+                        </div>
+                        <p className="text-xs text-muted-text font-body mt-1">
+                            {hint.issue.zone || 'Unspecified zone'} - {hint.issue.status}
+                        </p>
+                        {hint.reason && (
+                            <p className="text-[10px] text-muted-text font-body mt-1">
+                                {hint.reason}
+                            </p>
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
     );

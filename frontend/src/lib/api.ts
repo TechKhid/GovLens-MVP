@@ -28,7 +28,11 @@ async function request<T>(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers,
+    credentials: options.credentials ?? 'include',
+  });
 
   // Attempt silent token refresh on 401 (excluding auth endpoints themselves)
   const isAuthEndpoint = path.includes('/auth/login') || path.includes('/auth/register');

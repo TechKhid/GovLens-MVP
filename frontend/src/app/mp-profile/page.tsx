@@ -47,8 +47,25 @@ function compoundToApproval(compound: number): number {
     return Math.round(Math.max(0, Math.min(100, (compound + 1) * 50)));
 }
 
+function computeApprovalRating(
+    sentimentCompound: number | null,
+    verifiedResolvedCount: number,
+    totalCount: number
+): number | null {
+    const sentimentScore = sentimentCompound === null ? null : compoundToApproval(sentimentCompound);
+    const verificationScore = totalCount > 0 ? Math.round((verifiedResolvedCount / totalCount) * 100) : null;
+
+    if (sentimentScore === null && verificationScore === null) return null;
+    if (sentimentScore === null) return verificationScore;
+    if (verificationScore === null) return sentimentScore;
+
+    return Math.round(sentimentScore * 0.4 + verificationScore * 0.6);
+}
+
 export default function MPProfilePage() {
     const { issues } = useDataStore();
+    const currentUser = getCurrentUser();
+    const constituency = currentUser?.constituency || 'Ayawaso West Wuogon';
     const [mpProfile, setMpProfile] = useState<MPPublicProfileResponse | null>(null);
     const [sentiment, setSentiment] = useState<SentimentData | null>(null);
     const [mlUnavailable, setMlUnavailable] = useState(false);
@@ -59,26 +76,10 @@ export default function MPProfilePage() {
         async function load() {
             setLoading(true);
             try {
-                const user = getCurrentUser();
-                const constituency = user?.constituency || 'Ayawaso West Wuogon';
-
                 const profile = await api.get<MPPublicProfileResponse>(
                     `/mp/public-profile?constituency=${encodeURIComponent(constituency)}`
                 );
                 setMpProfile(profile);
-
-                const sentimentResult = await api
-                    .get<SentimentData>(`/ml/sentiment?zone=${encodeURIComponent(constituency)}`)
-                    .then((value) => ({ ok: true as const, value }))
-                    .catch(() => ({ ok: false as const }));
-
-                if (sentimentResult.ok) {
-                    setSentiment(sentimentResult.value);
-                    setMlUnavailable(false);
-                } else {
-                    setSentiment(null);
-                    setMlUnavailable(true);
-                }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load profile');
                 setMpProfile(null);
@@ -87,8 +88,27 @@ export default function MPProfilePage() {
             }
         }
 
-        load();
-    }, []);
+        void load();
+    }, [constituency]);
+
+    useEffect(() => {
+        async function loadSentiment() {
+            const sentimentResult = await api
+                .get<SentimentData>(`/ml/sentiment?zone=${encodeURIComponent(constituency)}`)
+                .then((value) => ({ ok: true as const, value }))
+                .catch(() => ({ ok: false as const }));
+
+            if (sentimentResult.ok) {
+                setSentiment(sentimentResult.value);
+                setMlUnavailable(false);
+            } else {
+                setSentiment(null);
+                setMlUnavailable(true);
+            }
+        }
+
+        void loadSentiment();
+    }, [constituency, issues]);
 
     if (loading) {
         return (
@@ -138,8 +158,15 @@ export default function MPProfilePage() {
         matchesConstituencyZone(mp.constituency, issue.zone)
     );
     const totalCount = constituencyIssues.length;
-    const resolvedCount = constituencyIssues.filter((issue) => issue.status === 'Resolved').length;
-    const approvalRating = sentiment ? compoundToApproval(sentiment.average_compound) : null;
+    const claimedResolvedCount = constituencyIssues.filter((issue) =>
+        issue.status === 'Pending Verification' || issue.status === 'Verified Resolved'
+    ).length;
+    const verifiedResolvedCount = constituencyIssues.filter((issue) => issue.status === 'Verified Resolved').length;
+    const approvalRating = computeApprovalRating(
+        sentiment ? sentiment.average_compound : null,
+        verifiedResolvedCount,
+        totalCount
+    );
     const severitySegments = sentiment
         ? [
               {
@@ -243,7 +270,7 @@ export default function MPProfilePage() {
                             {sentiment && (
                                 <div className="mt-3">
                                     <p className="text-[10px] text-muted-text font-body mb-1">
-                                        Based on {sentiment.sample_size} issue reports
+                                        Based on citizen sentiment and verified issue outcomes
                                     </p>
                                     <div className="flex h-2 rounded-full overflow-hidden bg-background">
                                         {severitySegments.map((segment) => (
@@ -266,6 +293,20 @@ export default function MPProfilePage() {
                                             </span>
                                         ))}
                                     </div>
+                                    <div className="mt-3 grid grid-cols-2 gap-3">
+                                        <div className="border border-border rounded px-3 py-2">
+                                            <p className="text-[10px] uppercase tracking-wider text-muted-text font-body">
+                                                Resolution Claims
+                                            </p>
+                                            <p className="font-mono text-xl text-primary-text">{claimedResolvedCount}</p>
+                                        </div>
+                                        <div className="border border-border rounded px-3 py-2">
+                                            <p className="text-[10px] uppercase tracking-wider text-muted-text font-body">
+                                                Verified Resolved
+                                            </p>
+                                            <p className="font-mono text-xl text-primary-text">{verifiedResolvedCount}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </>
@@ -280,8 +321,8 @@ export default function MPProfilePage() {
                             <p className="font-mono text-3xl font-bold">{totalCount}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-muted-text font-body mb-0.5">Resolved</p>
-                            <p className="font-mono text-3xl font-bold text-status-resolved">{resolvedCount}</p>
+                            <p className="text-xs text-muted-text font-body mb-0.5">Verified Resolved</p>
+                            <p className="font-mono text-3xl font-bold text-status-resolved">{verifiedResolvedCount}</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-text font-body mb-0.5">Average Response Time</p>

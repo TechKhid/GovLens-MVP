@@ -1,0 +1,18 @@
+# import config
+packagefile bytes=C:\Users\User\GovLens_MVP\.gocache\69\690ebc6ced6b62d631607268f49531ccc6f905ab0d58a4578f70de3323a7a03c-d
+packagefile crypto/md5=C:\Users\User\GovLens_MVP\.gocache\21\210ed14809fb8721fdec3b7d01dd9836e5198cd158344be46bcc32c892d450fe-d
+packagefile crypto/rand=C:\Users\User\GovLens_MVP\.gocache\9a\9a21f213cbf5553a0acd09cb25c71af36359f29267752d548c4d4acb2b81de67-d
+packagefile crypto/sha1=C:\Users\User\GovLens_MVP\.gocache\6b\6bb402a3b06e0f1dd888cc984c6d5e96a4bfb3b886b866b52b4dd477ad6545ec-d
+packagefile database/sql/driver=C:\Users\User\GovLens_MVP\.gocache\26\269dab3e9c80a962b9a22d3242aa1dde159b97c57ce648abe35875693bbbee48-d
+packagefile encoding/binary=C:\Users\User\GovLens_MVP\.gocache\3c\3c38f37f946c7a0b46e25294ab398eb761fb3346cdf99745b6ee0700a4bc2415-d
+packagefile encoding/hex=C:\Users\User\GovLens_MVP\.gocache\46\46c4f9a0b1b775b627f955c7df48cfff39983dc787d8b6bdb34a0687e72a41ea-d
+packagefile encoding/json=C:\Users\User\GovLens_MVP\.gocache\e6\e6440d3ce7386f3d9b1035226c6151a742e67daed479ed17f054faae07268d59-d
+packagefile errors=C:\Users\User\GovLens_MVP\.gocache\65\65670194b2e0e91ed005e66bf1a654b0b7fafe65e801062748faebd1bd2e2ef4-d
+packagefile fmt=C:\Users\User\GovLens_MVP\.gocache\7a\7ae7a5a2bd01fc61bc47b963c5fe58351d0d5d5fae41127e43eaa6c1863dea2f-d
+packagefile hash=C:\Users\User\GovLens_MVP\.gocache\af\af0fbdc0b5cfa4c84f513a5b7960b01f4026bccc1945bffcee7cda5fe3405de2-d
+packagefile io=C:\Users\User\GovLens_MVP\.gocache\02\0243f3b8ba2ded9010f7ac0515438b530eb6a73657e3ce4f34b1bbb35d5538d9-d
+packagefile net=C:\Users\User\GovLens_MVP\.gocache\85\85f99eefa204cf3e0d6a18f733c6f9c9ae489a8dfece0a275ec235994159decb-d
+packagefile os=C:\Users\User\GovLens_MVP\.gocache\63\638e0fe30a12b1c9fa03b023eecc17391ced10f4567de278a3a34bb656015738-d
+packagefile strings=C:\Users\User\GovLens_MVP\.gocache\85\85e483c876a41b97e6a29f8e8c127eaec39ff8c68fa3a53ac90ce7e597ba6ef0-d
+packagefile sync=C:\Users\User\GovLens_MVP\.gocache\62\6209a7d530cd405ef70a1ca8d01e5d1260c3fea9b7eebc3b4ab5ed5e4e25fd9c-d
+packagefile time=C:\Users\User\GovLens_MVP\.gocache\49\49ffe9f35a229550364f6eadd77be9abdbb3b63fa801da4991a188593573cfc5-d

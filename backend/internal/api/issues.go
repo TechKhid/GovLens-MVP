@@ -35,9 +35,81 @@ var allowedIssueImageTypes = map[string]string{
 	"image/webp": ".webp",
 }
 
+func normalizeIssueStatusInput(input string) string {
+	normalized := strings.ToLower(strings.TrimSpace(input))
+	normalized = strings.ReplaceAll(normalized, "_", "-")
+	normalized = strings.ReplaceAll(normalized, " ", "-")
+
+	aliases := map[string]string{
+		"reported":             "open",
+		"open":                 "open",
+		"acknowledged":         "acknowledged",
+		"in-progress":          "in-progress",
+		"pending-verification": "pending-verification",
+		"verified-resolved":    "verified-resolved",
+		"resolved":             "verified-resolved",
+		"reopened":             "reopened",
+	}
+
+	if resolved, ok := aliases[normalized]; ok {
+		return resolved
+	}
+	return normalized
+}
+
+func validateIssueStatusChange(role string, requestedStatus string, note string) (string, error) {
+	status := normalizeIssueStatusInput(requestedStatus)
+	allowedByRole := map[string]map[string]bool{
+		"mp": {
+			"acknowledged":         true,
+			"in-progress":          true,
+			"pending-verification": true,
+		},
+		"admin": {
+			"open":                 true,
+			"acknowledged":         true,
+			"in-progress":          true,
+			"pending-verification": true,
+			"verified-resolved":    true,
+			"reopened":             true,
+		},
+	}
+
+	allowedStatuses, ok := allowedByRole[role]
+	if !ok || !allowedStatuses[status] {
+		return "", fmt.Errorf("status transition not allowed for role")
+	}
+
+	if status == "pending-verification" && strings.TrimSpace(note) == "" {
+		return "", fmt.Errorf("resolution note is required before pending verification")
+	}
+
+	return status, nil
+}
+
+func validateIssueVerificationAction(action string) (string, error) {
+	normalized := strings.ToLower(strings.TrimSpace(action))
+	if normalized == "confirm" || normalized == "dispute" {
+		return normalized, nil
+	}
+	return "", fmt.Errorf("verification action must be one of: confirm, dispute")
+}
+
+func normalizeIssueSeverityInput(input string) (string, error) {
+	normalized := strings.ToLower(strings.TrimSpace(input))
+	switch normalized {
+	case "low", "medium", "high", "critical":
+		return normalized, nil
+	default:
+		return "", fmt.Errorf("severity must be one of: low, medium, high, critical")
+	}
+}
+
 type createIssueInput struct {
 	Title       string
 	Description string
+	Sector      string
+	Severity    string
 	Zone        string
 	Lat         float64
 	Lng         float64
@@ -80,6 +152,28 @@ func (s *Server) issueVisibleToConstituency(
 }
 
 // GET /issues — cached 30s, filterable by ?zone=
+func (s *Server) authorizeIssueManagement(ctx context.Context, role string, issue db.Issue) (pgtype.UUID, int, error) {
+	userIDStr, _ := ctx.Value(ctxUserID).(string)
+	var actorID pgtype.UUID
+	if userIDStr != "" {
+		if err := actorID.Scan(userIDStr); err != nil {
+			return actorID, http.StatusInternalServerError, fmt.Errorf("invalid user id in context")
+		}
+	}
+
+	if role == "mp" {
+		user, err := s.Store.GetUserByID(ctx, actorID)
+		if err != nil {
+			return actorID, http.StatusInternalServerError, fmt.Errorf("failed to load MP profile")
+		}
+		if user.Constituency == nil || !s.issueVisibleToConstituency(ctx, *user.Constituency, issue.Zone, issue.UserID, map[string]bool{}) {
+			return actorID, http.StatusForbidden, fmt.Errorf("forbidden: issue outside your constituency")
+		}
+	}
+
+	return actorID, 0, nil
+}
+
 func (s *Server) handleListIssues(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	zone := r.URL.Query().Get("zone")
@@ -308,6 +402,15 @@ func (s *Server) handleCreateIssue(w http.ResponseWriter, r *http.Request) {
 	if input.Zone != "" {
 		zonePtr = &input.Zone
 	}
+	var sectorPtr, severityPtr *string
+	if input.Sector != "" {
+		sector := strings.TrimSpace(input.Sector)
+		sectorPtr = &sector
+	}
+	if input.Severity != "" {
+		severity := strings.TrimSpace(input.Severity)
+		severityPtr = &severity
+	}
 	var latPtr, lngPtr *float64
 	if input.Lat != 0 {
 		latPtr = &input.Lat
@@ -320,6 +423,8 @@ func (s *Server) handleCreateIssue(w http.ResponseWriter, r *http.Request) {
 		UserID:      userID,
 		Title:       input.Title,
 		Description: input.Description,
+		Sector:      sectorPtr,
+		Severity:    severityPtr,
 		Zone:        zonePtr,
 		Lat:         latPtr,
 		Lng:         lngPtr,
@@ -357,6 +462,8 @@ func (s *Server) parseCreateIssueInput(w http.ResponseWriter, r *http.Request) (
 	var input struct {
 		Title       string  `json:"title"`
 		Description string  `json:"description"`
+		Sector      string  `json:"sector"`
+		Severity    string  `json:"severity"`
 		Zone        string  `json:"zone"`
 		Lat         float64 `json:"lat"`
 		Lng         float64 `json:"lng"`
@@ -365,9 +472,20 @@ func (s *Server) parseCreateIssueInput(w http.ResponseWriter, r *http.Request) (
 		return createIssueInput{}, nil, fmt.Errorf("invalid request body")
 	}
 
+	severity := strings.TrimSpace(input.Severity)
+	if severity != "" {
+		normalizedSeverity, err := normalizeIssueSeverityInput(severity)
+		if err != nil {
+			return createIssueInput{}, nil, err
+		}
+		severity = normalizedSeverity
+	}
+
 	return createIssueInput{
 		Title:       strings.TrimSpace(input.Title),
 		Description: strings.TrimSpace(input.Description),
+		Sector:      strings.TrimSpace(input.Sector),
+		Severity:    severity,
 		Zone:        strings.TrimSpace(input.Zone),
 		Lat:         input.Lat,
 		Lng:         input.Lng,
@@ -384,8 +502,16 @@ func (s *Server) parseMultipartCreateIssueInput(w http.ResponseWriter, r *http.R
 	input := createIssueInput{
 		Title:       strings.TrimSpace(r.FormValue("title")),
 		Description: strings.TrimSpace(r.FormValue("description")),
+		Sector:      strings.TrimSpace(r.FormValue("sector")),
 		Zone:        strings.TrimSpace(r.FormValue("zone")),
 		ImageURLs:   []string{},
+	}
+	if value := strings.TrimSpace(r.FormValue("severity")); value != "" {
+		severity, err := normalizeIssueSeverityInput(value)
+		if err != nil {
+			return createIssueInput{}, nil, err
+		}
+		input.Severity = severity
 	}
 
 	if value := strings.TrimSpace(r.FormValue("lat")); value != "" {
@@ -547,15 +673,16 @@ func (s *Server) handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
 		Status string `json:"status"`
+		Note   string `json:"note"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	allowed := map[string]bool{"open": true, "in-progress": true, "resolved": true}
-	if !allowed[input.Status] {
-		http.Error(w, "status must be one of: open, in-progress, resolved", http.StatusBadRequest)
+	status, err := validateIssueStatusChange(role, input.Status, input.Note)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -564,23 +691,53 @@ func (s *Server) handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	issue, err := s.Store.GetIssue(ctx, id)
+	if err != nil {
+		http.Error(w, "issue not found", http.StatusNotFound)
+		return
+	}
+
+	actorID, statusCode, err := s.authorizeIssueManagement(ctx, role, issue)
+	if err != nil {
+		http.Error(w, err.Error(), statusCode)
+		return
+	}
+
 	if err := s.Store.UpdateIssueStatus(ctx, db.UpdateIssueStatusParams{
 		ID:     id,
-		Status: input.Status,
+		Status: status,
 	}); err != nil {
 		slog.Error("UpdateIssueStatus", slog.Any("err", err))
 		http.Error(w, "failed to update status", http.StatusInternalServerError)
 		return
 	}
 
-	// Write resolved_at timestamp for ML response-time analytics
-	if input.Status == "resolved" {
+	if strings.TrimSpace(input.Note) != "" {
+		if _, err := s.Store.CreateComment(ctx, db.CreateCommentParams{
+			IssueID: id,
+			UserID:  actorID,
+			Content: strings.TrimSpace(input.Note),
+		}); err != nil {
+			slog.Warn("status note comment creation failed", slog.Any("err", err))
+		}
+	}
+
+	// Write resolved_at timestamp only when citizens/admin fully verify resolution.
+	if status == "verified-resolved" {
 		if _, err := s.Store.Primary.Exec(
 			ctx,
 			"UPDATE issues SET resolved_at = NOW() WHERE id = $1 AND resolved_at IS NULL",
 			id,
 		); err != nil {
 			slog.Warn("resolved_at update failed", slog.Any("err", err))
+		}
+	} else {
+		if _, err := s.Store.Primary.Exec(
+			ctx,
+			"UPDATE issues SET resolved_at = NULL WHERE id = $1",
+			id,
+		); err != nil {
+			slog.Warn("resolved_at clear failed", slog.Any("err", err))
 		}
 	}
 
@@ -591,4 +748,197 @@ func (s *Server) handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, map[string]string{"status": "success"})
+}
+
+// PATCH /issues/{id}/manage — requires auth (admin or mp only)
+func (s *Server) handleManageIssue(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	role, _ := ctx.Value(ctxRole).(string)
+	if role != "admin" && role != "mp" {
+		http.Error(w, "forbidden: admin or mp only", http.StatusForbidden)
+		return
+	}
+
+	idStr := chi.URLParam(r, "id")
+	var id pgtype.UUID
+	if err := id.Scan(idStr); err != nil {
+		http.Error(w, "invalid issue id", http.StatusBadRequest)
+		return
+	}
+
+	var input struct {
+		Severity     string `json:"severity"`
+		Assignee     string `json:"assignee"`
+		InternalNote string `json:"internal_note"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	severity, err := normalizeIssueSeverityInput(input.Severity)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if s.Store == nil {
+		http.Error(w, "database unavailable", http.StatusServiceUnavailable)
+		return
+	}
+
+	issue, err := s.Store.GetIssue(ctx, id)
+	if err != nil {
+		http.Error(w, "issue not found", http.StatusNotFound)
+		return
+	}
+
+	if _, statusCode, err := s.authorizeIssueManagement(ctx, role, issue); err != nil {
+		http.Error(w, err.Error(), statusCode)
+		return
+	}
+
+	var severityPtr, assigneePtr, internalNotePtr *string
+	severityPtr = &severity
+	if trimmed := strings.TrimSpace(input.Assignee); trimmed != "" {
+		assigneePtr = &trimmed
+	}
+	if trimmed := strings.TrimSpace(input.InternalNote); trimmed != "" {
+		internalNotePtr = &trimmed
+	}
+
+	updatedIssue, err := s.Store.UpdateIssueManagement(ctx, db.UpdateIssueManagementParams{
+		ID:            id,
+		Severity:      severityPtr,
+		Assignee:      assigneePtr,
+		InternalNotes: internalNotePtr,
+	})
+	if err != nil {
+		slog.Error("UpdateIssueManagement", slog.Any("err", err))
+		http.Error(w, "failed to update issue management fields", http.StatusInternalServerError)
+		return
+	}
+
+	if s.Cache != nil {
+		s.Cache.DeletePattern(ctx, "issues:list:*")
+		s.Cache.Delete(ctx, "analytics:overview")
+	}
+
+	respondJSON(w, http.StatusOK, updatedIssue)
+}
+
+func (s *Server) handleVerifyIssue(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userIDStr, ok := ctx.Value(ctxUserID).(string)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	idStr := chi.URLParam(r, "id")
+	var id pgtype.UUID
+	if err := id.Scan(idStr); err != nil {
+		http.Error(w, "invalid issue id", http.StatusBadRequest)
+		return
+	}
+
+	var actorID pgtype.UUID
+	if err := actorID.Scan(userIDStr); err != nil {
+		http.Error(w, "invalid user id in context", http.StatusInternalServerError)
+		return
+	}
+
+	var input struct {
+		Action  string `json:"action"`
+		Comment string `json:"comment"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	action, err := validateIssueVerificationAction(input.Action)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if s.Store == nil {
+		http.Error(w, "database unavailable", http.StatusServiceUnavailable)
+		return
+	}
+
+	issue, err := s.Store.GetIssue(ctx, id)
+	if err != nil {
+		http.Error(w, "issue not found", http.StatusNotFound)
+		return
+	}
+
+	if formatUUID(issue.UserID) != formatUUID(actorID) {
+		http.Error(w, "forbidden: only the original reporter can verify this issue", http.StatusForbidden)
+		return
+	}
+
+	if issue.Status != "pending-verification" {
+		http.Error(w, "issue is not awaiting citizen verification", http.StatusConflict)
+		return
+	}
+
+	nextStatus := "verified-resolved"
+	comment := strings.TrimSpace(input.Comment)
+	if action == "dispute" {
+		nextStatus = "reopened"
+		if comment == "" {
+			comment = "Reporter disputed the claimed resolution."
+		}
+	}
+
+	if err := s.Store.UpdateIssueStatus(ctx, db.UpdateIssueStatusParams{
+		ID:     id,
+		Status: nextStatus,
+	}); err != nil {
+		slog.Error("VerifyIssue UpdateIssueStatus", slog.Any("err", err))
+		http.Error(w, "failed to update issue verification", http.StatusInternalServerError)
+		return
+	}
+
+	if nextStatus == "verified-resolved" {
+		if _, err := s.Store.Primary.Exec(
+			ctx,
+			"UPDATE issues SET resolved_at = NOW() WHERE id = $1 AND resolved_at IS NULL",
+			id,
+		); err != nil {
+			slog.Warn("verify issue resolved_at update failed", slog.Any("err", err))
+		}
+	} else {
+		if _, err := s.Store.Primary.Exec(
+			ctx,
+			"UPDATE issues SET resolved_at = NULL WHERE id = $1",
+			id,
+		); err != nil {
+			slog.Warn("verify issue resolved_at clear failed", slog.Any("err", err))
+		}
+	}
+
+	if comment != "" {
+		if _, err := s.Store.CreateComment(ctx, db.CreateCommentParams{
+			IssueID: id,
+			UserID:  actorID,
+			Content: comment,
+		}); err != nil {
+			slog.Warn("verification comment creation failed", slog.Any("err", err))
+		}
+	}
+
+	if s.Cache != nil {
+		s.Cache.DeletePattern(ctx, "issues:list:*")
+		s.Cache.Delete(ctx, "analytics:overview")
+		s.Cache.DeletePattern(ctx, "ml:*")
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{
+		"status": nextStatus,
+		"result": action,
+	})
 }

@@ -1,0 +1,39 @@
+
+> govlens-mvp@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.14 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://169.254.83.107:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 584ms
+ ✓ Ready in 5.9s
+ ○ Compiling /login ...
+ ✓ Compiled /login in 18.2s
+ GET /login?from=%2F 200 in 19926ms
+ GET /login 200 in 4920ms
+ GET /login 200 in 833ms
+ ○ Compiling /mp/dashboard ...
+ ✓ Compiled /mp/dashboard in 1370ms
+ GET /mp/dashboard 200 in 1604ms
+ GET /login 200 in 802ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.1s
+ GET / 200 in 2577ms
+ GET /login?from=%2F 200 in 5942ms
+ GET /login?from=%2F 200 in 5350ms
+ GET / 200 in 1022ms
+ ○ Compiling /mp-profile ...
+ ✓ Compiled /mp-profile in 1928ms
+ GET /mp-profile 200 in 2780ms
+ GET /login?from=%2Fmp%2Fanalytics 200 in 1066ms
+ ○ Compiling /mp/analytics ...
+ ✓ Compiled /mp/analytics in 615ms
+ GET /mp/analytics 200 in 738ms
+ ✓ Compiled in 28.4s
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 3.7s
+ GET / 500 in 662ms

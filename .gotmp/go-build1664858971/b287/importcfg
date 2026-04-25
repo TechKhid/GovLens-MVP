@@ -1,0 +1,8 @@
+# import config
+packagefile crypto/rand=C:\Users\User\GovLens_MVP\.gocache\9a\9a21f213cbf5553a0acd09cb25c71af36359f29267752d548c4d4acb2b81de67-d
+packagefile encoding/base64=C:\Users\User\GovLens_MVP\.gocache\f9\f91b267dbba2aefca072732ced145bdbd86e7e610a62951b00d0acd49319122c-d
+packagefile errors=C:\Users\User\GovLens_MVP\.gocache\65\65670194b2e0e91ed005e66bf1a654b0b7fafe65e801062748faebd1bd2e2ef4-d
+packagefile github.com/golang-jwt/jwt/v5=C:\Users\User\GovLens_MVP\.gocache\45\45848e897d3ccdffcb1a8539a14602ee37667bc436a1e6c9efaa44ba9b832e31-d
+packagefile golang.org/x/crypto/bcrypt=C:\Users\User\GovLens_MVP\.gocache\1a\1a068ba0c3ea251df70a00e6e617d674b95e82cafd4bdb2b1d7db6de9a6037f6-d
+packagefile os=C:\Users\User\GovLens_MVP\.gocache\63\638e0fe30a12b1c9fa03b023eecc17391ced10f4567de278a3a34bb656015738-d
+packagefile time=C:\Users\User\GovLens_MVP\.gocache\49\49ffe9f35a229550364f6eadd77be9abdbb3b63fa801da4991a188593573cfc5-d

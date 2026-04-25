@@ -1,0 +1,127 @@
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\server\app\login\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\server\\app\\login\\page\\app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\server\app\login\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\server\\app\\login\\page\\app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.f3aljjbuc2h'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.f3aljjbuc2h'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.2smp4ejq188'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.2smp4ejq188'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\server\app\login\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\server\\app\\login\\page\\app-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\server\app\login\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\server\\app\\login\\page\\app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.7t402ga0g1b'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.7t402ga0g1b'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.jvssfwlb6ld'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.jvssfwlb6ld'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.v23d845gmei'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.v23d845gmei'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.k63bxt06v3'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.k63bxt06v3'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\server\app\login\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\server\\app\\login\\page\\app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.g31iujetcxa'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.g31iujetcxa'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\server\app\login\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\server\\app\\login\\page\\app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.4yxlnomcsj6'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.4yxlnomcsj6'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.mb9fwf9erfq'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.mb9fwf9erfq'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.vndm7zhrlwe'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.vndm7zhrlwe'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.vpw76vkdmhh'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.vpw76vkdmhh'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.vndm7zhrlwe'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.vndm7zhrlwe'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.tr4kk42pb9j'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.tr4kk42pb9j'
+}
+[Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\static\development\_buildManifest.js.tmp.1lm3541m831'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\static\\development\\_buildManifest.js.tmp.1lm3541m831'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'C:\Users\User\GovLens_MVP\frontend\.next\server\app\page\app-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\User\\GovLens_MVP\\frontend\\.next\\server\\app\\page\\app-build-manifest.json'
+}
+^C^C

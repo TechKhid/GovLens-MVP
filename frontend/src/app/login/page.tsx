@@ -5,15 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/RoleContext';
 
-// ── Adinkra tiled background ──────────────────────────────────────────────────
-
 function AdinkraBackground() {
     return (
         <div
             aria-hidden
             className="absolute pointer-events-none select-none"
             style={{
-                inset: '-20%',           // oversized so rotated edges don't show gaps
+                inset: '-20%',
                 backgroundImage: 'url(/adinkra.png)',
                 backgroundSize: '680px auto',
                 backgroundRepeat: 'repeat',
@@ -24,8 +22,6 @@ function AdinkraBackground() {
         />
     );
 }
-
-// ── Login form ────────────────────────────────────────────────────────────────
 
 function LoginForm() {
     const { login, isAuthenticated, user, isLoading } = useAuth();
@@ -65,26 +61,11 @@ function LoginForm() {
         }
     };
 
-    const handleGuestAccess = async () => {
-        setError('');
-        setSubmitting(true);
-        try {
-            await login('amina@example.com', 'password123');
-        } catch {
-            setError('Could not start guest session.');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
     return (
         <div className="relative min-h-screen bg-background flex flex-col items-center justify-center px-4 overflow-hidden">
-            {/* Authentic Adinkra symbols in background */}
             <AdinkraBackground />
 
-            {/* Card — same original color theme */}
             <div className="relative w-full max-w-md bg-white border border-border p-8 md:p-10 z-10">
-                {/* Logo */}
                 <div className="flex items-center gap-3 mb-8">
                     <div className="w-9 h-9 bg-primary-text flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-display text-base font-bold">G</span>
@@ -96,12 +77,14 @@ function LoginForm() {
                 </div>
 
                 <h1 className="text-2xl font-bold text-primary-text mb-1">Sign in</h1>
-                <p className="text-sm text-muted-text font-body mb-7">
+                <p className="text-sm text-muted-text font-body mb-2">
                     Enter your credentials to access your account.
+                </p>
+                <p className="text-xs text-muted-text font-body mb-7">
+                    MP access is limited to approved accounts. Citizen and admin access use real backend credentials.
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Email */}
                     <div>
                         <label className="section-label mb-1.5 block" htmlFor="login-email">
                             Email
@@ -119,7 +102,6 @@ function LoginForm() {
                         />
                     </div>
 
-                    {/* Password */}
                     <div>
                         <label className="section-label mb-1.5 block" htmlFor="login-password">
                             Password
@@ -130,21 +112,19 @@ function LoginForm() {
                             autoComplete="current-password"
                             required
                             className="input-field"
-                            placeholder="••••••••"
+                            placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={submitting}
                         />
                     </div>
 
-                    {/* Error */}
                     {error && (
                         <p className="text-sm font-body text-red-600 bg-red-50 border border-red-200 px-3 py-2">
                             {error}
                         </p>
                     )}
 
-                    {/* Submit */}
                     <button
                         type="submit"
                         className="btn-primary w-full flex items-center justify-center gap-2 mt-2"
@@ -153,7 +133,7 @@ function LoginForm() {
                         {submitting ? (
                             <>
                                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Signing in…
+                                Signing in...
                             </>
                         ) : (
                             'Sign in'
@@ -161,40 +141,13 @@ function LoginForm() {
                     </button>
                 </form>
 
-                {/* Divider */}
-                <div className="flex items-center gap-3 my-5">
-                    <div className="flex-1 border-t border-border" />
-                    <span className="text-xs text-muted-text font-body">or</span>
-                    <div className="flex-1 border-t border-border" />
-                </div>
-
-                {/* Guest access */}
-                <button
-                    onClick={handleGuestAccess}
-                    className="btn-secondary w-full"
-                    disabled={submitting}
-                >
-                    Continue as guest (Citizen view)
-                </button>
-
-                {/* Sign up link */}
                 <div className="text-center mt-6">
                     <p className="text-sm text-muted-text font-body">
-                        Don't have an account?{' '}
+                        Don&apos;t have an account?{' '}
                         <Link href="/register" className="text-primary-text font-medium hover:underline transition-colors">
                             Sign up
                         </Link>
                     </p>
-                </div>
-
-                {/* Dev helper */}
-                <div className="mt-6 p-3 bg-background border border-border">
-                    <p className="section-label mb-2">Development — test accounts</p>
-                    <div className="space-y-1 text-xs font-body text-muted-text">
-                        <p><span className="font-medium text-primary-text">Citizen:</span> amina@example.com / password123</p>
-                        <p><span className="font-medium text-primary-text">MP:</span> mp@example.com / password123</p>
-                        <p><span className="font-medium text-primary-text">Admin:</span> admin@example.com / password123</p>
-                    </div>
                 </div>
             </div>
 
@@ -203,7 +156,7 @@ function LoginForm() {
                     href="/"
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-border text-sm font-body text-primary-text hover:bg-primary-text hover:text-white transition-colors shadow-sm"
                 >
-                    ← Back to public site
+                    Back to public site
                 </Link>
             </div>
         </div>

@@ -1,0 +1,12 @@
+ALTER TABLE issues
+    ADD COLUMN IF NOT EXISTS assignee TEXT,
+    ADD COLUMN IF NOT EXISTS internal_notes TEXT;
+
+ALTER TABLE briefings
+    ADD COLUMN IF NOT EXISTS post_type TEXT NOT NULL DEFAULT 'Briefing',
+    ADD COLUMN IF NOT EXISTS sectors TEXT[] NOT NULL DEFAULT ARRAY['Other']::TEXT[],
+    ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS views INTEGER NOT NULL DEFAULT 0;
+
+CREATE INDEX IF NOT EXISTS idx_briefings_post_type ON briefings(post_type);
+CREATE INDEX IF NOT EXISTS idx_briefings_pinned ON briefings(pinned) WHERE pinned = TRUE;

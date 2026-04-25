@@ -1,0 +1,27 @@
+# import config
+packagefile bytes=C:\Users\User\GovLens_MVP\.gocache\69\690ebc6ced6b62d631607268f49531ccc6f905ab0d58a4578f70de3323a7a03c-d
+packagefile context=C:\Users\User\GovLens_MVP\.gocache\aa\aa34eac980d80e30376c5c955854dd5382431271eed2e73542ecbdb25d54c6c2-d
+packagefile crypto/sha256=C:\Users\User\GovLens_MVP\.gocache\75\75e67f6a683fb4b414709e98cd891d150fbea146d3bcbbad8cefe4fac0336432-d
+packagefile encoding/binary=C:\Users\User\GovLens_MVP\.gocache\3c\3c38f37f946c7a0b46e25294ab398eb761fb3346cdf99745b6ee0700a4bc2415-d
+packagefile encoding/json=C:\Users\User\GovLens_MVP\.gocache\e6\e6440d3ce7386f3d9b1035226c6151a742e67daed479ed17f054faae07268d59-d
+packagefile errors=C:\Users\User\GovLens_MVP\.gocache\65\65670194b2e0e91ed005e66bf1a654b0b7fafe65e801062748faebd1bd2e2ef4-d
+packagefile fmt=C:\Users\User\GovLens_MVP\.gocache\7a\7ae7a5a2bd01fc61bc47b963c5fe58351d0d5d5fae41127e43eaa6c1863dea2f-d
+packagefile go/ast=C:\Users\User\GovLens_MVP\.gotmp\go-build1664858971\b109\_pkg_.a
+packagefile go/parser=C:\Users\User\GovLens_MVP\.gotmp\go-build1664858971\b113\_pkg_.a
+packagefile go/token=C:\Users\User\GovLens_MVP\.gotmp\go-build1664858971\b111\_pkg_.a
+packagefile internal/godebug=C:\Users\User\GovLens_MVP\.gocache\d3\d3f2987604b2dacb24cfdc2cc616e037578eb889a31ec5dca0c1ccf5776eded6-d
+packagefile io=C:\Users\User\GovLens_MVP\.gocache\02\0243f3b8ba2ded9010f7ac0515438b530eb6a73657e3ce4f34b1bbb35d5538d9-d
+packagefile math=C:\Users\User\GovLens_MVP\.gocache\87\877a631ebcde0740cf7279c5a8186b30ea61db6c1ac446341987bf092affa2f3-d
+packagefile math/bits=C:\Users\User\GovLens_MVP\.gocache\23\23986513621323da70c0d4337be938e8ff89ebaa45f65fd432b9b2e995c34313-d
+packagefile os=C:\Users\User\GovLens_MVP\.gocache\63\638e0fe30a12b1c9fa03b023eecc17391ced10f4567de278a3a34bb656015738-d
+packagefile os/exec=C:\Users\User\GovLens_MVP\.gotmp\go-build1664858971\b115\_pkg_.a
+packagefile path/filepath=C:\Users\User\GovLens_MVP\.gocache\79\794a6378303a2aa96dfc87c1f6c281d5a731aa8b35de867e1f5cffb208dcff5b-d
+packagefile reflect=C:\Users\User\GovLens_MVP\.gocache\67\67001ed3246cdb37f3728466ed30bb15fe0edd63da1bc19cc336991e4196bb4c-d
+packagefile runtime=C:\Users\User\GovLens_MVP\.gocache\b8\b8704d1a1ee85e3bd892a8c841002e0fdb45e64ff636357c91edb8b423c6d50f-d
+packagefile strconv=C:\Users\User\GovLens_MVP\.gocache\fe\fe39103bd5dd76aca3413e1565f4f9c8a8af17ae439a6a5bd901e0471892c67e-d
+packagefile strings=C:\Users\User\GovLens_MVP\.gocache\85\85e483c876a41b97e6a29f8e8c127eaec39ff8c68fa3a53ac90ce7e597ba6ef0-d
+packagefile sync=C:\Users\User\GovLens_MVP\.gocache\62\6209a7d530cd405ef70a1ca8d01e5d1260c3fea9b7eebc3b4ab5ed5e4e25fd9c-d
+packagefile sync/atomic=C:\Users\User\GovLens_MVP\.gocache\a9\a902b4efbd68a0e91682f04cade420eeed6c698ccb07094ffaeb903dcf2a3139-d
+packagefile syscall=C:\Users\User\GovLens_MVP\.gocache\df\df3c2f12b2b4e776410fa27e149698de6d69ab9a2d6e0df308c23dd5dc20e0fc-d
+packagefile time=C:\Users\User\GovLens_MVP\.gocache\49\49ffe9f35a229550364f6eadd77be9abdbb3b63fa801da4991a188593573cfc5-d
+packagefile unicode/utf8=C:\Users\User\GovLens_MVP\.gocache\d8\d8fb9b270db6a1ebe64b4aa53e60bbb982f66a0dcfd982db5432a81c872a8154-d
