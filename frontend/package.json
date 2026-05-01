@@ -10,14 +10,19 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@types/leaflet": "^1.9.21",
+    "@deck.gl/aggregation-layers": "^9.3.1",
+    "@deck.gl/core": "^9.3.1",
+    "@deck.gl/google-maps": "^9.3.1",
+    "@deck.gl/layers": "^9.3.1",
+    "@deck.gl/mapbox": "^9.3.1",
     "@vercel/analytics": "^1.6.1",
-    "leaflet": "^1.9.4",
+    "@vis.gl/react-google-maps": "^1.8.3",
+    "maplibre-gl": "^5.9.0",
     "next": "^15.5.14",
     "plotly.js-dist-min": "^3.5.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-leaflet": "^5.0.0",
+    "react-map-gl": "^8.1.0",
     "swr": "^2.4.1"
   },
   "devDependencies": {

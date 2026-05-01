@@ -36,14 +36,13 @@ function LoginForm() {
     useEffect(() => {
         if (!isLoading && isAuthenticated && user) {
             const from = searchParams.get('from');
-            const destination =
-                from && from !== '/login'
+            const destination = user.role === 'mp'
+                ? '/mp/dashboard'
+                : from && from !== '/login'
                     ? from
                     : user.role === 'sysadmin'
                         ? '/admin'
-                        : user.role === 'mp'
-                            ? '/mp/dashboard'
-                            : '/';
+                        : '/';
             router.replace(destination);
         }
     }, [isAuthenticated, isLoading, user, router, searchParams]);

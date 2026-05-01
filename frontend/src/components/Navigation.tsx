@@ -57,6 +57,7 @@ export default function Navigation() {
 
     const mpLinks = [
         { href: '/mp/dashboard', label: 'Dashboard' },
+        { href: '/mp/heatmap', label: 'Heatmap' },
         { href: '/mp/briefings', label: 'Briefings' },
         { href: '/mp/analytics', label: 'Analytics' },
         { href: '/mp-profile', label: 'MP Profile' },

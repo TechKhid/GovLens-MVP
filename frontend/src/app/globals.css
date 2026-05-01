@@ -142,26 +142,10 @@
     animation: fadeIn 0.2s ease-out;
 }
 
-/* Leaflet overrides */
-.leaflet-tooltip {
-    font-family: var(--font-dm-sans), sans-serif;
-    font-size: 12px;
-    border: 1px solid #E5E5E3;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border-radius: 4px;
-    padding: 6px 10px;
-}
-
-.custom-marker,
-.zone-marker {
-    background: transparent !important;
-    border: none !important;
-}
-
-.constituency-tooltip {
-    font-family: var(--font-dm-sans), sans-serif;
-    font-weight: 600;
-    font-size: 13px;
+/* Google Maps search host */
+.map-search-shell gmp-place-autocomplete {
+    display: block;
+    width: 100%;
 }
 
 /* ── Login page Adinkra background ──────────────────────────────────────────── */
