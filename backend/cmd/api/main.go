@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,6 +20,36 @@ import (
 	"github.com/govlens/govlens-mvp/backend/internal/queue"
 )
 
+// retryConnect retries a connection factory with exponential backoff.
+// Returns the result of the first successful call, or the last error after
+// all attempts are exhausted.
+func retryConnect[T any](name string, maxAttempts int, factory func() (T, error)) (T, error) {
+	backoff := 1 * time.Second
+	const maxBackoff = 30 * time.Second
+
+	var lastErr error
+	var zero T
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		result, err := factory()
+		if err == nil {
+			return result, nil
+		}
+		lastErr = err
+		slog.Warn(
+			fmt.Sprintf("%s connection attempt %d/%d failed, retrying in %s", name, attempt, maxAttempts, backoff),
+			slog.Any("err", err),
+		)
+		time.Sleep(backoff)
+		backoff = backoff * 2
+		if backoff > maxBackoff {
+			backoff = maxBackoff
+		}
+	}
+
+	return zero, fmt.Errorf("%s: all %d attempts exhausted: %w", name, maxAttempts, lastErr)
+}
+
 func main() {
 	// 1. Initialize structured logger
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
@@ -33,20 +64,32 @@ func main() {
 
 	ctx := context.Background()
 
-	// 2. Initialize infrastructure — soft-fail so container starts even if deps are slow
-	store, err := db.NewStore(ctx)
+	// 2. Initialize infrastructure with retry logic
+	// Database is critical — retry up to 10 times (~8.5 min total with backoff)
+	store, err := retryConnect("PostgreSQL", 10, func() (*db.Store, error) {
+		return db.NewStore(ctx)
+	})
 	if err != nil {
-		slog.Error("Failed to connect to database", slog.Any("err", err))
+		slog.Error("CRITICAL: Failed to connect to database after retries — exiting", slog.Any("err", err))
+		os.Exit(1)
 	}
 
-	redisCache, err := cache.NewCache(ctx)
+	// Redis is optional — retry up to 5 times, then degrade gracefully
+	redisCache, err := retryConnect("Redis", 5, func() (*cache.Cache, error) {
+		return cache.NewCache(ctx)
+	})
 	if err != nil {
-		slog.Error("Failed to connect to redis", slog.Any("err", err))
+		slog.Warn("Redis unavailable — running without cache", slog.Any("err", err))
+		redisCache = nil
 	}
 
-	natsQueue, err := queue.NewQueue()
+	// NATS is optional — retry up to 5 times, then degrade gracefully
+	natsQueue, err := retryConnect("NATS", 5, func() (*queue.Queue, error) {
+		return queue.NewQueue()
+	})
 	if err != nil {
-		slog.Error("Failed to connect to NATS", slog.Any("err", err))
+		slog.Warn("NATS unavailable — running without event queue", slog.Any("err", err))
+		natsQueue = nil
 	}
 
 	// 3. Build the root router with global middleware

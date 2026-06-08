@@ -157,10 +157,6 @@ function RegisterForm() {
             setError('Political Party is required for MPs.');
             return;
         }
-        if (role === 'mp' && !inviteCode.trim()) {
-            setError('MP onboarding requires an invite code or whitelist approval.');
-            return;
-        }
 
         setSubmitting(true);
         try {
@@ -296,19 +292,18 @@ function RegisterForm() {
                     {role === 'mp' && (
                         <div>
                             <label className="block text-xs font-bold text-muted-text uppercase tracking-wider mb-2 font-body">
-                                Invite Code
+                                Invite Code (Optional)
                             </label>
                             <input
                                 type="text"
                                 value={inviteCode}
                                 onChange={(e) => setInviteCode(e.target.value)}
-                                required={role === 'mp'}
                                 className="w-full px-4 py-2 border border-border focus:border-primary-text focus:ring-1 focus:ring-primary-text outline-none transition-all font-body text-sm"
-                                placeholder="Enter MP invite code"
+                                placeholder="Enter MP invite code if you have one"
                                 disabled={submitting}
                             />
                             <p className="mt-2 text-xs text-muted-text font-body">
-                                Public MP self-registration is disabled for trust and verification reasons.
+                                If your parliamentary email is pre-approved, you can leave this blank.
                             </p>
                         </div>
                     )}
@@ -385,6 +380,8 @@ function RegisterForm() {
                                 </label>
                                 {avatarUpload && (
                                     <div className="mt-3 flex items-center gap-3 border border-border px-3 py-2">
+                                        {/* Blob previews are not compatible with Next image optimization. */}
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={avatarUpload.previewUrl}
                                             alt="MP avatar preview"

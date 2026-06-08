@@ -6,6 +6,7 @@ import { Sector, SECTORS, SECTOR_COLORS, Issue } from '@/lib/mockData';
 import { useDataStore } from '@/context/DataStoreContext';
 import { useAuth } from '@/context/RoleContext';
 import { getConstituencyCenter } from '@/lib/constituency-centers';
+import { getZoneOptionsForConstituency } from '@/lib/geo-scope';
 import { api } from '@/lib/api';
 import { findSimilarIssues, SimilarIssueHint } from '@/lib/issueIntelligence';
 
@@ -46,8 +47,17 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
     const [description, setDescription] = useState('');
     const [address, setAddress] = useState('');
     const [zone, setZone] = useState('');
+    const [customZone, setCustomZone] = useState('');
     const [pinLat, setPinLat] = useState(GHANA_LAT);
     const [pinLng, setPinLng] = useState(GHANA_LNG);
+
+    // Zones available for this user's constituency (Title Case display labels).
+    const zoneOptions = useMemo(
+        () => getZoneOptionsForConstituency(user?.constituency),
+        [user?.constituency]
+    );
+    // The effective zone value sent to the API
+    const effectiveZone = zone === '__other__' ? customZone : zone;
     const [photoUploads, setPhotoUploads] = useState<PhotoUpload[]>([]);
     const [photoError, setPhotoError] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -185,6 +195,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
         setDescription('');
         setAddress('');
         setZone('');
+        setCustomZone('');
         clearPhotoUploads();
         setSubmitting(false);
         setClassificationLoading(false);
@@ -217,7 +228,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                 title,
                 description: description || title,
                 sector: sector ?? suggestedSector ?? 'Other',
-                zone: zone || user?.constituency || '',
+                zone: effectiveZone || user?.constituency || '',
                 status: 'Reported',
                 severity: suggestedSeverity,
                 reporter: { name: 'You', avatar: 'YO' },
@@ -407,15 +418,48 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                             </div>
 
                             <div>
-                                <label className="section-label block mb-1.5">Zone / Area <span className="text-muted-text font-normal">(optional)</span></label>
-                                <input
-                                    type="text"
-                                    value={zone}
-                                    onChange={(e) => setZone(e.target.value)}
-                                    placeholder="e.g. Nkonya Ahenkro, Market Area…"
-                                    className="input-field"
-                                />
-                                <p className="text-[10px] text-muted-text font-body mt-1">Enter any local area, neighbourhood or landmark name</p>
+                                <label className="section-label block mb-1.5">
+                                    Area / Zone <span className="text-muted-text font-normal">(optional)</span>
+                                </label>
+                                {zoneOptions.length > 0 ? (
+                                    <>
+                                        <select
+                                            value={zone}
+                                            onChange={(e) => {
+                                                setZone(e.target.value);
+                                                if (e.target.value !== '__other__') setCustomZone('');
+                                            }}
+                                            title="Zone / area within your constituency"
+                                            className="input-field bg-white"
+                                        >
+                                            <option value="">Select your area (optional)</option>
+                                            {zoneOptions.map((z) => (
+                                                <option key={z} value={z}>{z}</option>
+                                            ))}
+                                            <option value="__other__">Other / Not listed…</option>
+                                        </select>
+                                        {zone === '__other__' && (
+                                            <input
+                                                type="text"
+                                                value={customZone}
+                                                onChange={(e) => setCustomZone(e.target.value)}
+                                                placeholder="Type your neighbourhood or landmark"
+                                                className="input-field mt-2"
+                                            />
+                                        )}
+                                    </>
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={zone}
+                                        onChange={(e) => setZone(e.target.value)}
+                                        placeholder="e.g. Market Area, Community Centre…"
+                                        className="input-field"
+                                    />
+                                )}
+                                <p className="text-[10px] text-muted-text font-body mt-1">
+                                    Selecting a known area helps route your report to the right MP.
+                                </p>
                             </div>
 
                             <SimilarIssueHints hints={similarIssueHints} />
@@ -463,6 +507,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                                 <div className="grid grid-cols-3 gap-2">
                                     {photoUploads.map((photo, i) => (
                                         <div key={i} className="relative aspect-square rounded border border-border overflow-hidden">
+                                            {/* Blob previews are not compatible with Next image optimization. */}
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img src={photo.previewUrl} alt="" className="w-full h-full object-cover" />
                                             <button
                                                 onClick={() => removePhoto(i)}
@@ -509,8 +555,8 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                                             {sector ?? suggestedSector}
                                         </span>
                                     )}
-                                    {zone && (
-                                        <span className="text-xs text-muted-text font-body">{zone}</span>
+                                    {effectiveZone && (
+                                        <span className="text-xs text-muted-text font-body">{effectiveZone}</span>
                                     )}
                                 </div>
                             </div>

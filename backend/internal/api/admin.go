@@ -3,11 +3,14 @@ package api
 import (
 	"encoding/csv"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/govlens/govlens-mvp/backend/internal/db"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -35,9 +38,9 @@ func (s *Server) handleAdminStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"total_users":  stats.TotalUsers,
-		"active_mps":   stats.ActiveMps,
-		"total_issues": stats.TotalIssues,
+		"total_users":   stats.TotalUsers,
+		"active_mps":    stats.ActiveMps,
+		"total_issues":  stats.TotalIssues,
 		"system_health": "OK", // Basic placeholder, could dynamically ping DB
 	})
 }
@@ -63,7 +66,7 @@ type SuspendUserRequest struct {
 
 func (s *Server) handleAdminSuspendUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	var targetID pgtype.UUID
 	if err := targetID.Scan(chi.URLParam(r, "id")); err != nil {
 		http.Error(w, "invalid user id", http.StatusBadRequest)
@@ -95,7 +98,7 @@ func (s *Server) handleAdminSuspendUser(w http.ResponseWriter, r *http.Request) 
 		actorID = pgtype.UUID{}
 	}
 
-	actionDesc := "Updated suspension flags (Login: " + boolToStr(req.LoginSuspended) + 
+	actionDesc := "Updated suspension flags (Login: " + boolToStr(req.LoginSuspended) +
 		", Content: " + boolToStr(req.ContentHidden) + ")"
 
 	_, _ = s.Store.InsertAuditLog(ctx, db.InsertAuditLogParams{
@@ -113,9 +116,23 @@ type UpdateRoleRequest struct {
 	Role string `json:"role"`
 }
 
+func normalizeManagedUserRole(role string) (string, error) {
+	normalized := strings.ToLower(strings.TrimSpace(role))
+	switch normalized {
+	case "citizen", "mp", "sysadmin":
+		return normalized, nil
+	default:
+		return "", fmt.Errorf("invalid role type")
+	}
+}
+
 func (s *Server) handleAdminUpdateRole(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+	if s.Store == nil {
+		http.Error(w, "database unavailable", http.StatusServiceUnavailable)
+		return
+	}
+
 	var targetID pgtype.UUID
 	if err := targetID.Scan(chi.URLParam(r, "id")); err != nil {
 		http.Error(w, "invalid user id", http.StatusBadRequest)
@@ -128,16 +145,25 @@ func (s *Server) handleAdminUpdateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Role != "citizen" && req.Role != "mp" && req.Role != "sysadmin" {
-		http.Error(w, "invalid role type", http.StatusBadRequest)
+	role, err := normalizeManagedUserRole(req.Role)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	updated, err := s.Store.UpdateUserRole(ctx, db.UpdateUserRoleParams{
+	updated, err := s.Store.ChangeUserRoleWithLifecycle(ctx, db.ChangeUserRoleWithLifecycleParams{
 		ID:   targetID,
-		Role: req.Role,
+		Role: role,
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "user not found", http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, db.ErrMPRoleRequiresConstituency) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		http.Error(w, "failed to update user role", http.StatusInternalServerError)
 		return
 	}
@@ -146,10 +172,10 @@ func (s *Server) handleAdminUpdateRole(w http.ResponseWriter, r *http.Request) {
 	actorIDStr, _ := ctx.Value(ctxUserID).(string)
 	var actorID pgtype.UUID
 	_ = actorID.Scan(actorIDStr)
-	
+
 	_, _ = s.Store.InsertAuditLog(ctx, db.InsertAuditLogParams{
 		ActorID:  actorID,
-		Action:   "Changed user role to " + req.Role,
+		Action:   "Changed user role to " + role,
 		TargetID: targetID,
 	})
 
@@ -174,7 +200,11 @@ func (s *Server) handleAdminAuditLogs(w http.ResponseWriter, r *http.Request) {
 // Columns: name,email,role,constituency
 func (s *Server) handleAdminBulkImport(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+	if s.Store == nil {
+		http.Error(w, "database unavailable", http.StatusServiceUnavailable)
+		return
+	}
+
 	err := r.ParseMultipartForm(10 << 20) // 10 MB limit
 	if err != nil {
 		http.Error(w, "file too large or invalid multipart", http.StatusBadRequest)
@@ -214,20 +244,34 @@ func (s *Server) handleAdminBulkImport(w http.ResponseWriter, r *http.Request) {
 
 		name := strings.TrimSpace(row[0])
 		email := strings.TrimSpace(row[1])
-		role := strings.TrimSpace(strings.ToLower(row[2]))
+		role, err := normalizeManagedUserRole(row[2])
+		if err != nil {
+			continue
+		}
 		constituency := strings.TrimSpace(row[3])
-		
+
 		constiPtr := &constituency
 		if constituency == "" {
 			constiPtr = nil
 		}
+		if role == "mp" && constiPtr == nil {
+			continue
+		}
 
-		_, err := s.Store.CreateUser(ctx, db.CreateUserParams{
+		var mpProfile *db.MPProfileSeed
+		if role == "mp" {
+			mpProfile = &db.MPProfileSeed{
+				Bio: "Member of Parliament for " + constituency,
+			}
+		}
+
+		_, err = s.Store.RegisterUserWithOptionalMPProfile(ctx, db.RegisterUserWithOptionalMPProfileParams{
 			Name:         name,
 			Email:        email,
 			PasswordHash: string(dummyPasswordHash),
 			Role:         role,
 			Constituency: constiPtr,
+			MPProfile:    mpProfile,
 		})
 
 		if err == nil {
@@ -239,7 +283,7 @@ func (s *Server) handleAdminBulkImport(w http.ResponseWriter, r *http.Request) {
 	actorIDStr, _ := ctx.Value(ctxUserID).(string)
 	var actorID pgtype.UUID
 	_ = actorID.Scan(actorIDStr)
-	
+
 	_, _ = s.Store.InsertAuditLog(ctx, db.InsertAuditLogParams{
 		ActorID:  actorID,
 		Action:   "Bulk imported users",
@@ -247,8 +291,8 @@ func (s *Server) handleAdminBulkImport(w http.ResponseWriter, r *http.Request) {
 	})
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"message": "Bulk import completed",
-		"success_count": successCount,
+		"message":              "Bulk import completed",
+		"success_count":        successCount,
 		"total_rows_processed": len(records) - 1,
 	})
 }

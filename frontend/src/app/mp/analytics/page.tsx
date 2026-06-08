@@ -681,7 +681,7 @@ function AnalyticsPageContent() {
                 font: { size: 11, color: '#D97706' },
             },
         ] : [],
-    }), [forecast, history, overviewLayout]);
+    }), [forecast, overviewLayout]);
 
     const zoneBalanceRows = useMemo(() => zonePressure.map((row) => ({
         zone: row.zone,

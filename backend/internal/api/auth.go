@@ -14,15 +14,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 	"github.com/govlens/govlens-mvp/backend/internal/db"
 	"github.com/govlens/govlens-mvp/backend/internal/service"
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const (
-	maxMPAvatarSize    = 5 << 20
+	maxMPAvatarSize      = 5 << 20
 	maxRegisterFormBytes = 16 << 20
 )
 
@@ -252,6 +252,10 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "name, email and password are required", http.StatusBadRequest)
 		return
 	}
+	if req.Constituency == "" {
+		http.Error(w, "constituency is required", http.StatusBadRequest)
+		return
+	}
 
 	hashedPassword, err := service.HashPassword(req.Password)
 	if err != nil {
@@ -281,19 +285,13 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := s.Store.CreateUser(r.Context(), db.CreateUserParams{
-		Name:         req.Name,
-		Email:        req.Email,
-		PasswordHash: hashedPassword,
-		Role:         role,
-		Constituency: constituencyPtr,
-	})
-	if err != nil {
-		http.Error(w, "could not create user: "+err.Error(), http.StatusConflict)
-		return
-	}
-
+	var mpProfile *db.MPProfileSeed
 	if role == "mp" {
+		if req.Party == "" {
+			http.Error(w, "party is required for MP registration", http.StatusBadRequest)
+			return
+		}
+
 		termStart := req.TermStart
 		if termStart == "" {
 			termStart = "2025"
@@ -307,21 +305,32 @@ func (s *Server) handleRegister(w http.ResponseWriter, r *http.Request) {
 			bio = "Member of Parliament for " + req.Constituency
 		}
 
-		_, err := s.Store.CreateMPProfile(r.Context(), db.CreateMPProfileParams{
-			UserID:     user.ID,
+		mpProfile = &db.MPProfileSeed{
 			Party:      req.Party,
 			TermStart:  termStart,
 			TermEnd:    termEnd,
 			Bio:        bio,
 			Phone:      req.Phone,
 			OfficeAddr: req.OfficeAddr,
-			PhotoUrl:   req.PhotoURL,
-		})
-		if err != nil {
-			slog.Error("Failed to create MP Profile during registration", slog.Any("err", err))
-		} else {
-			keepUploads = true
+			PhotoURL:   req.PhotoURL,
 		}
+	}
+
+	user, err := s.Store.RegisterUserWithOptionalMPProfile(r.Context(), db.RegisterUserWithOptionalMPProfileParams{
+		Name:         req.Name,
+		Email:        req.Email,
+		PasswordHash: hashedPassword,
+		Role:         role,
+		Constituency: constituencyPtr,
+		MPProfile:    mpProfile,
+	})
+	if err != nil {
+		http.Error(w, "could not create user: "+err.Error(), http.StatusConflict)
+		return
+	}
+
+	if cleanupUploads != nil {
+		keepUploads = true
 	}
 
 	var connStr string

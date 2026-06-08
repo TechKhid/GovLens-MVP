@@ -215,6 +215,8 @@ export default function MPProfilePage() {
                 <div className="flex items-start gap-4">
                     <div className="w-28 h-28 rounded-full flex-shrink-0 relative overflow-hidden bg-primary-text flex items-center justify-center">
                         {photoUrl ? (
+                            // The profile photo may be served from user-provided or backend-hosted URLs.
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                                 src={photoUrl}
                                 alt={mp.name}

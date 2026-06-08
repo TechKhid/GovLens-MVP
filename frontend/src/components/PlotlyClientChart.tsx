@@ -98,13 +98,14 @@ export default function PlotlyClientChart({
         }
 
         void renderChart();
+        const chartNode = chartRef.current;
 
         return () => {
             cancelled = true;
             cleanupResize?.();
-            chartRef.current?.removeAllListeners?.('plotly_click');
-            if (Plotly && chartRef.current) {
-                Plotly.purge(chartRef.current);
+            chartNode?.removeAllListeners?.('plotly_click');
+            if (Plotly && chartNode) {
+                Plotly.purge(chartNode);
             }
         };
     }, [config, data, layout, onPointClick]);

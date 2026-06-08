@@ -66,7 +66,7 @@ export default function MPIssueWorkspace({
         setSeverity(issue.severity);
         setAssignee(issue.assignedTo ?? '');
         setInternalNote(issue.internalNotes ?? '');
-    }, [issue?.id, issue?.status, issue?.severity, issue?.assignedTo, issue?.internalNotes]);
+    }, [issue]);
 
     useEffect(() => {
         const issueId = issue?.id;

@@ -20,7 +20,7 @@ export default function DeckOverlay({ layers, map }: DeckOverlayProps) {
         if (!overlayRef.current) {
             overlayRef.current = new MapboxOverlay({
                 interleaved: false,
-                layers,
+                layers: [],
             });
             mapInstance.addControl(overlayRef.current);
         }

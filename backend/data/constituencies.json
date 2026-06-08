@@ -2,7 +2,8 @@
   {
     "name": "Komenda Edina Eguafo Abrem",
     "slug": "komenda-edina-eguafo-abrem",
-    "region_slug": "central-region"
+    "region_slug": "central-region",
+    "district_slug": "komendaedinaeguafoabirem-municipal"
   },
   {
     "name": "Cape Coast South",
@@ -19,12 +20,14 @@
   {
     "name": "Abura Asebu Kwamankese",
     "slug": "abura-asebu-kwamankese",
-    "region_slug": "central-region"
+    "region_slug": "central-region",
+    "district_slug": "aburaasebukwamankese-district"
   },
   {
     "name": "Mfantseman",
     "slug": "mfantseman",
-    "region_slug": "central-region"
+    "region_slug": "central-region",
+    "district_slug": "mfantsiman-municipal"
   },
   {
     "name": "Ekumfi",
@@ -35,7 +38,8 @@
   {
     "name": "Ajumako Enyan Esiam",
     "slug": "ajumako-enyan-esiam",
-    "region_slug": "central-region"
+    "region_slug": "central-region",
+    "district_slug": "ajumakoenyanessiam-district"
   },
   {
     "name": "Gomoa West",
@@ -118,7 +122,8 @@
   {
     "name": "Hemang Lower Denkyira",
     "slug": "hemang-lower-denkyira",
-    "region_slug": "central-region"
+    "region_slug": "central-region",
+    "district_slug": "twifohemanglower-denkyira-district"
   },
   {
     "name": "Upper Denkyira East",
@@ -141,32 +146,38 @@
   {
     "name": "Sawla Tuna Kalba",
     "slug": "sawla-tuna-kalba",
-    "region_slug": "savannah-region"
+    "region_slug": "savannah-region",
+    "district_slug": "sawla-tuna-kalba-district"
   },
   {
     "name": "Damongo",
     "slug": "damongo",
-    "region_slug": "savannah-region"
+    "region_slug": "savannah-region",
+    "district_slug": "west-gonja-municipal"
   },
   {
     "name": "Daboya Mankarigu",
     "slug": "daboya-mankarigu",
-    "region_slug": "savannah-region"
+    "region_slug": "savannah-region",
+    "district_slug": "north-gonja-district"
   },
   {
     "name": "Yapei Kusawgu",
     "slug": "yapei-kusawgu",
-    "region_slug": "savannah-region"
+    "region_slug": "savannah-region",
+    "district_slug": "central-gonja-district"
   },
   {
     "name": "Salaga South",
     "slug": "salaga-south",
-    "region_slug": "savannah-region"
+    "region_slug": "savannah-region",
+    "district_slug": "east-gonja-municipal"
   },
   {
     "name": "Salaga North",
     "slug": "salaga-north",
-    "region_slug": "savannah-region"
+    "region_slug": "savannah-region",
+    "district_slug": "north-east-gonja-district"
   },
   {
     "name": "Jomoro",
@@ -184,7 +195,7 @@
     "name": "Evalue Ajomoro Gwira",
     "slug": "evalue-ajomoro-gwira",
     "region_slug": "western-region",
-    "district_slug": "jomoro-municipal"
+    "district_slug": "nzema-east-municipal"
   },
   {
     "name": "Ahanta West",
@@ -207,7 +218,8 @@
   {
     "name": "Essikadu Ketan",
     "slug": "essikadu-ketan",
-    "region_slug": "western-region"
+    "region_slug": "western-region",
+    "district_slug": "sekondi-takoradi-metro"
   },
   {
     "name": "Effia",
@@ -218,7 +230,8 @@
   {
     "name": "Kwesimintim",
     "slug": "kwesimintim",
-    "region_slug": "western-region"
+    "region_slug": "western-region",
+    "district_slug": "effia-kwesimintsim-municipal"
   },
   {
     "name": "Shama",
@@ -241,12 +254,14 @@
   {
     "name": "Tarkwa Nsuaem",
     "slug": "tarkwa-nsuaem",
-    "region_slug": "western-region"
+    "region_slug": "western-region",
+    "district_slug": "tarkwa-nsuaem-municipal"
   },
   {
     "name": "Prestea Huni Valley",
     "slug": "prestea-huni-valley",
-    "region_slug": "western-region"
+    "region_slug": "western-region",
+    "district_slug": "prestea-huni-valley-municipal"
   },
   {
     "name": "Wassa Amenfi East",
@@ -269,12 +284,14 @@
   {
     "name": "Bortianor Ngleshie Amanfro",
     "slug": "bortianor-ngleshie-amanfro",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "ga-south-municipal"
   },
   {
     "name": "Domeabra Obom",
     "slug": "domeabra-obom",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "ga-south-municipal"
   },
   {
     "name": "Weija Gbawe",
@@ -285,22 +302,26 @@
   {
     "name": "Anyaa Sowutuom",
     "slug": "anyaa-sowutuom",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "ga-central-municipal"
   },
   {
     "name": "Trobu",
     "slug": "trobu",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "ga-west-municipal"
   },
   {
     "name": "Amasaman",
     "slug": "amasaman",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "ga-west-municipal"
   },
   {
     "name": "Dome Kwabenya",
     "slug": "dome-kwabenya",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "ga-east-municipal"
   },
   {
     "name": "Madina",
@@ -330,24 +351,25 @@
     "name": "Ayawaso West Wuogon",
     "slug": "ayawaso-west-wuogon",
     "region_slug": "greater-accra-region",
-    "district_slug": "ayawaso-central-municipal"
+    "district_slug": "ayawaso-west-municipal"
   },
   {
     "name": "Okaikwei South",
     "slug": "okaikwei-south",
     "region_slug": "greater-accra-region",
-    "district_slug": "okaikwei-north-municipal"
+    "district_slug": "accra-metro"
   },
   {
     "name": "Ablekuma South",
     "slug": "ablekuma-south",
     "region_slug": "greater-accra-region",
-    "district_slug": "ablekuma-central-municipal"
+    "district_slug": "accra-metro"
   },
   {
     "name": "Odododiodioo",
     "slug": "odododiodioo",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "accra-metro"
   },
   {
     "name": "Okaikwei Central",
@@ -382,12 +404,14 @@
   {
     "name": "Korle Klottey",
     "slug": "korle-klottey",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "korle-klottey-municipal"
   },
   {
     "name": "Dadekotopon",
     "slug": "dadekotopon",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "la-dade-kotopon-municipal"
   },
   {
     "name": "Ledzokuku",
@@ -422,7 +446,8 @@
   {
     "name": "Kpone Katamanso",
     "slug": "kpone-katamanso",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "kpone-katamanso-municipal"
   },
   {
     "name": "Ashaiman",
@@ -439,17 +464,20 @@
   {
     "name": "Shai Osudoku",
     "slug": "shai-osudoku",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "shai-osudoku-district"
   },
   {
     "name": "Ningo Prampram",
     "slug": "ningo-prampram",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "ningo-prampram-district"
   },
   {
     "name": "Sege",
     "slug": "sege",
-    "region_slug": "greater-accra-region"
+    "region_slug": "greater-accra-region",
+    "district_slug": "ada-west-district"
   },
   {
     "name": "Ada",
@@ -466,12 +494,14 @@
   {
     "name": "Bimbilla",
     "slug": "bimbilla",
-    "region_slug": "northern-region"
+    "region_slug": "northern-region",
+    "district_slug": "nanumba-north-municipal"
   },
   {
     "name": "Wulensi",
     "slug": "wulensi",
-    "region_slug": "northern-region"
+    "region_slug": "northern-region",
+    "district_slug": "nanumba-south-district"
   },
   {
     "name": "Zabzugu",
@@ -566,7 +596,8 @@
   {
     "name": "Buem",
     "slug": "buem",
-    "region_slug": "oti-region"
+    "region_slug": "oti-region",
+    "district_slug": "jasikan-district"
   },
   {
     "name": "Biakoye",
@@ -577,7 +608,8 @@
   {
     "name": "Akan",
     "slug": "akan",
-    "region_slug": "oti-region"
+    "region_slug": "oti-region",
+    "district_slug": "kadjebi-district"
   },
   {
     "name": "Krachi East",
@@ -612,7 +644,8 @@
   {
     "name": "Guan",
     "slug": "guan",
-    "region_slug": "oti-region"
+    "region_slug": "oti-region",
+    "district_slug": "jasikan-district"
   },
   {
     "name": "Asunafo South",
@@ -755,7 +788,8 @@
   {
     "name": "Atebubu Amantin",
     "slug": "atebubu-amantin",
-    "region_slug": "bono-east-region"
+    "region_slug": "bono-east-region",
+    "district_slug": "atebubu-amantin-municipal"
   },
   {
     "name": "Pru West",
@@ -814,7 +848,8 @@
   {
     "name": "Akwatia",
     "slug": "akwatia",
-    "region_slug": "eastern-region"
+    "region_slug": "eastern-region",
+    "district_slug": "denkyembour-district"
   },
   {
     "name": "Asene Manso Akroso",
@@ -927,7 +962,8 @@
   {
     "name": "Yilo Krobo",
     "slug": "yilo-krobo",
-    "region_slug": "eastern-region"
+    "region_slug": "eastern-region",
+    "district_slug": "yilo-krobo-municipal"
   },
   {
     "name": "Okere",
@@ -938,42 +974,50 @@
   {
     "name": "Akuapem North",
     "slug": "akuapem-north",
-    "region_slug": "eastern-region"
+    "region_slug": "eastern-region",
+    "district_slug": "akuapim-north-municipal"
   },
   {
     "name": "Akuapem South",
     "slug": "akuapem-south",
-    "region_slug": "eastern-region"
+    "region_slug": "eastern-region",
+    "district_slug": "akuapim-south-district"
   },
   {
     "name": "Abetifi",
     "slug": "abetifi",
-    "region_slug": "eastern-region"
+    "region_slug": "eastern-region",
+    "district_slug": "kwahu-east-district"
   },
   {
     "name": "Nkawkaw",
     "slug": "nkawkaw",
-    "region_slug": "eastern-region"
+    "region_slug": "eastern-region",
+    "district_slug": "kwahu-west-municipal"
   },
   {
     "name": "Mpraeso",
     "slug": "mpraeso",
-    "region_slug": "eastern-region"
+    "region_slug": "eastern-region",
+    "district_slug": "kwahu-south-district"
   },
   {
     "name": "Walewale",
     "slug": "walewale",
-    "region_slug": "north-east-region"
+    "region_slug": "north-east-region",
+    "district_slug": "west-mamprusi-municipal"
   },
   {
     "name": "Yagaba Kubori",
     "slug": "yagaba-kubori",
-    "region_slug": "north-east-region"
+    "region_slug": "north-east-region",
+    "district_slug": "mamprugu-moagduri-district"
   },
   {
     "name": "Nalerigu Gambaga",
     "slug": "nalerigu-gambaga",
-    "region_slug": "north-east-region"
+    "region_slug": "north-east-region",
+    "district_slug": "east-mamprusi-municipal"
   },
   {
     "name": "Bunkpurugu",
@@ -997,7 +1041,7 @@
     "name": "Wa Central",
     "slug": "wa-central",
     "region_slug": "upper-west-region",
-    "district_slug": "wa-east-district"
+    "district_slug": "wa-municipal"
   },
   {
     "name": "Wa West",
@@ -1014,7 +1058,8 @@
   {
     "name": "Nadowli Kaleo",
     "slug": "nadowli-kaleo",
-    "region_slug": "upper-west-region"
+    "region_slug": "upper-west-region",
+    "district_slug": "nadowli-kaleo-district"
   },
   {
     "name": "Daffiama Bussie Issa",
@@ -1061,12 +1106,14 @@
   {
     "name": "Afigya Kwabre North",
     "slug": "afigya-kwabre-north",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "afigya-kwabre-north-district"
   },
   {
     "name": "Afigya Kwabre South",
     "slug": "afigya-kwabre-south",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "afigya-kwabre-south-district"
   },
   {
     "name": "Adansi Asokwa",
@@ -1089,17 +1136,20 @@
   {
     "name": "Ahafo Ano North",
     "slug": "ahafo-ano-north",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "ahafo-ano-north-municipal"
   },
   {
     "name": "Ahafo Ano South East",
     "slug": "ahafo-ano-south-east",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "ahafo-ano-south-east-district"
   },
   {
     "name": "Ahafo Ano South West",
     "slug": "ahafo-ano-south-west",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "ahafo-ano-south-west-district"
   },
   {
     "name": "Akrofuom",
@@ -1122,42 +1172,50 @@
   {
     "name": "Asante Akim Central",
     "slug": "asante-akim-central",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "asante-akim-central-municipal"
   },
   {
     "name": "Asante Akim North",
     "slug": "asante-akim-north",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "asante-akim-north-district"
   },
   {
     "name": "Asante Akim South",
     "slug": "asante-akim-south",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "asante-akim-south-municipal"
   },
   {
     "name": "Asawase",
     "slug": "asawase",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "asokore-mampong-municipal"
   },
   {
     "name": "Atwima Kwanwoma",
     "slug": "atwima-kwanwoma",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "atwima-kwanwoma-district"
   },
   {
     "name": "Atwima Mponua",
     "slug": "atwima-mponua",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "atwima-mponua-district"
   },
   {
     "name": "Atwima Nwabiagya North",
     "slug": "atwima-nwabiagya-north",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "atwima-nwabiagya-north-district"
   },
   {
     "name": "Atwima Nwabiagya South",
     "slug": "atwima-nwabiagya-south",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "atwima-nwabiagya-municipal"
   },
   {
     "name": "Bekwai",
@@ -1186,7 +1244,8 @@
   {
     "name": "Ejura Sekyedumase",
     "slug": "ejura-sekyedumase",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "ejurasekyedumase-municipal"
   },
   {
     "name": "Kumawu",
@@ -1209,17 +1268,20 @@
   {
     "name": "Manhyia North",
     "slug": "manhyia-north",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "kumasi-metro"
   },
   {
     "name": "Manhyia South",
     "slug": "manhyia-south",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "kumasi-metro"
   },
   {
     "name": "New Edubiase",
     "slug": "new-edubiase",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "adansi-south-district"
   },
   {
     "name": "Obuasi East",
@@ -1284,7 +1346,8 @@
   {
     "name": "Subin",
     "slug": "subin",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "kumasi-metro"
   },
   {
     "name": "Suame",
@@ -1301,12 +1364,14 @@
   {
     "name": "Tepa",
     "slug": "tepa",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "ahafo-ano-north-municipal"
   },
   {
     "name": "Bantama",
     "slug": "bantama",
-    "region_slug": "ashanti-region"
+    "region_slug": "ashanti-region",
+    "district_slug": "kumasi-metro"
   },
   {
     "name": "Asokwa",
@@ -1335,18 +1400,20 @@
   {
     "name": "Kassena Nankana East",
     "slug": "kassena-nankana-east",
-    "region_slug": "upper-east-region"
+    "region_slug": "upper-east-region",
+    "district_slug": "kassena-nankana-municipal"
   },
   {
     "name": "Kassena Nankana West",
     "slug": "kassena-nankana-west",
-    "region_slug": "upper-east-region"
+    "region_slug": "upper-east-region",
+    "district_slug": "kassena-nankana-west-district"
   },
   {
     "name": "Bolgatanga Central",
     "slug": "bolgatanga-central",
     "region_slug": "upper-east-region",
-    "district_slug": "bolgatanga-east-district"
+    "district_slug": "bolgatanga-municipal"
   },
   {
     "name": "Bolgatanga East",

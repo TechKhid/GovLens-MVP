@@ -94,13 +94,13 @@ func (s *Server) handleMPProfile(w http.ResponseWriter, r *http.Request) {
 // Joins users + mp_profiles to return the full constituency MP profile matching the param.
 func (s *Server) handleMPPublicProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	reqConstituency := r.URL.Query().Get("constituency")
 	if reqConstituency == "" {
 		// Fallback to Ayawaso West Wuogon for backwards-compatibility or empty params
-		reqConstituency = "Ayawaso West Wuogon" 
+		reqConstituency = "Ayawaso West Wuogon"
 	}
-	
+
 	cacheKey := "mp:public-profile:" + reqConstituency
 
 	if s.Cache != nil {
@@ -130,17 +130,17 @@ func (s *Server) handleMPPublicProfile(w http.ResponseWriter, r *http.Request) {
 			COALESCE(p.office_addr,'') AS office_addr,
 			COALESCE(p.photo_url,'')   AS photo_url
 		FROM users u
-		LEFT JOIN mp_profiles p ON p.user_id = u.id
+		LEFT JOIN mp_profiles p ON p.user_id = u.id AND p.profile_status = 'active'
 		WHERE u.role = 'mp' AND u.constituency = $1
 		LIMIT 1`
 
 	row := s.Store.Primary.QueryRow(ctx, q, reqConstituency)
 
 	var (
-		uid                                      pgtype.UUID
-		name, constituency                       string
-		party, termStart, termEnd                string
-		bio, phone, officeAddr, photoURL         string
+		uid                              pgtype.UUID
+		name, constituency               string
+		party, termStart, termEnd        string
+		bio, phone, officeAddr, photoURL string
 	)
 	if err := row.Scan(&uid, &name, &constituency, &party, &termStart, &termEnd, &bio, &phone, &officeAddr, &photoURL); err != nil {
 		slog.Error("handleMPPublicProfile scan", slog.Any("err", err))

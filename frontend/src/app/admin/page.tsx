@@ -347,7 +347,7 @@ export default function AdminDashboard() {
                                 />
                                 <div>
                                     <p className="text-sm font-medium text-primary-text">Hide Public Content</p>
-                                    <p className="text-xs text-muted-text mt-0.5">Omits all of this user's issues and comments from public APIs.</p>
+                                    <p className="text-xs text-muted-text mt-0.5">Omits all of this user&apos;s issues and comments from public APIs.</p>
                                 </div>
                             </label>
                         </div>
@@ -396,4 +396,3 @@ export default function AdminDashboard() {
         </div>
     );
 }
-
