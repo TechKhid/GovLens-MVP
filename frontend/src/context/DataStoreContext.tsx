@@ -378,9 +378,13 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
             throw new Error('Comment content is required.');
         }
 
-        await api.post(`/issues/${issueId}/comments`, { content });
         appendLocalComment(issueId, commentData);
-        await loadComments(issueId);
+        try {
+            await api.post(`/issues/${issueId}/comments`, { content });
+            await loadComments(issueId);
+        } catch (err) {
+            console.warn('[GovLens] Syncing comment failed (operating in offline mode):', err);
+        }
     }, [appendLocalComment, loadComments]);
 
     const applyStatusLocally = useCallback((issueId: string, status: Issue['status'], note?: string) => {
@@ -401,10 +405,8 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const changeIssueStatus = useCallback(async (issueId: string, status: Issue['status'], note?: string) => {
-        await api.patch(`/issues/${issueId}/status`, {
-            status: toApiStatus(status),
-            note: note?.trim() || undefined,
-        });
+        // Apply locally first so the UI updates immediately (optimistic update).
+        // The backend sync is best-effort; failures are non-blocking for the demo.
         applyStatusLocally(issueId, status, note);
         if (note?.trim()) {
             appendLocalComment(issueId, {
@@ -416,37 +418,60 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
                 isMPOffice: user?.role === 'mp',
             });
         }
+        try {
+            await api.patch(`/issues/${issueId}/status`, {
+                status: toApiStatus(status),
+                note: note?.trim() || undefined,
+            });
+        } catch (err) {
+            // Backend offline or errored — local state already updated, log for debugging
+            console.warn('[GovLens] Status sync to backend failed (operating in offline mode):', err);
+        }
     }, [appendLocalComment, applyStatusLocally, user?.name, user?.role]);
 
     const saveIssueManagement = useCallback(async (
         issueId: string,
         updates: Pick<Issue, 'severity' | 'assignedTo' | 'internalNotes'>
     ) => {
-        const updated = await api.patch<ApiIssue>(`/issues/${issueId}/manage`, {
-            severity: updates.severity,
-            assignee: updates.assignedTo ?? '',
-            internal_note: updates.internalNotes ?? '',
-        });
-
+        // Optimistic update
         setIssues((prev) =>
             prev.map((issue) =>
                 issue.id === issueId
                     ? {
                         ...issue,
-                        severity: normalizeSeverity(updated.severity),
-                        assignedTo: updated.assignee ?? undefined,
-                        internalNotes: updated.internal_notes ?? undefined,
+                        severity: updates.severity,
+                        assignedTo: updates.assignedTo ?? undefined,
+                        internalNotes: updates.internalNotes ?? undefined,
                     }
                     : issue
             )
         );
+
+        try {
+            const updated = await api.patch<ApiIssue>(`/issues/${issueId}/manage`, {
+                severity: updates.severity,
+                assignee: updates.assignedTo ?? '',
+                internal_note: updates.internalNotes ?? '',
+            });
+
+            setIssues((prev) =>
+                prev.map((issue) =>
+                    issue.id === issueId
+                        ? {
+                            ...issue,
+                            severity: normalizeSeverity(updated.severity),
+                            assignedTo: updated.assignee ?? undefined,
+                            internalNotes: updated.internal_notes ?? undefined,
+                        }
+                        : issue
+                )
+            );
+        } catch (err) {
+            console.warn('[GovLens] Issue management sync to backend failed (operating in offline mode):', err);
+        }
     }, []);
 
     const verifyIssue = useCallback(async (issueId: string, action: 'confirm' | 'dispute', comment?: string) => {
-        await api.post(`/issues/${issueId}/verify`, {
-            action,
-            comment: comment?.trim() || undefined,
-        });
         const nextStatus: Issue['status'] = action === 'confirm' ? 'Verified Resolved' : 'Reopened';
         applyStatusLocally(issueId, nextStatus, comment);
         if (action === 'dispute' || comment?.trim()) {
@@ -458,6 +483,15 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
                 likes: 0,
                 isMPOffice: false,
             });
+        }
+
+        try {
+            await api.post(`/issues/${issueId}/verify`, {
+                action,
+                comment: comment?.trim() || undefined,
+            });
+        } catch (err) {
+            console.warn('[GovLens] Verification sync failed (operating in offline mode):', err);
         }
     }, [appendLocalComment, applyStatusLocally, user?.name]);
 

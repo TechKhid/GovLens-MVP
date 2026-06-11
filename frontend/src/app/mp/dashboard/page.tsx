@@ -24,6 +24,7 @@ import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/context/RoleContext';
 import { matchesConstituencyZone } from '@/lib/geo-scope';
 import PlotlyClientChart from '@/components/PlotlyClientChart';
+import WeeklyFocusList from '@/components/WeeklyFocusList';
 
 function hexToRgba(hex: string, alpha: number): string {
     const normalized = hex.replace('#', '');
@@ -374,6 +375,8 @@ export default function MPDashboard() {
                 </aside>
 
                 <div className="min-w-0 flex-1 space-y-6">
+                    <WeeklyFocusList />
+
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <h2 className="font-display text-xl font-semibold text-primary-text">Constituency queue</h2>

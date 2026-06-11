@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -34,6 +35,11 @@ var allowedIssueImageTypes = map[string]string{
 	"image/png":  ".png",
 	"image/webp": ".webp",
 }
+
+var (
+	errIssueVerificationForbidden   = errors.New("forbidden: only the original reporter can verify this issue")
+	errIssueNotAwaitingVerification = errors.New("issue is not awaiting citizen verification")
+)
 
 func normalizeIssueStatusInput(input string) string {
 	normalized := strings.ToLower(strings.TrimSpace(input))
@@ -93,6 +99,18 @@ func validateIssueVerificationAction(action string) (string, error) {
 		return normalized, nil
 	}
 	return "", fmt.Errorf("verification action must be one of: confirm, dispute")
+}
+
+func validateIssueVerificationEligibility(issue db.Issue, actorID pgtype.UUID) error {
+	if formatUUID(issue.UserID) != formatUUID(actorID) {
+		return errIssueVerificationForbidden
+	}
+
+	if normalizeIssueStatusInput(issue.Status) != "pending-verification" {
+		return errIssueNotAwaitingVerification
+	}
+
+	return nil
 }
 
 func normalizeIssueSeverityInput(input string) (string, error) {
@@ -875,13 +893,12 @@ func (s *Server) handleVerifyIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if formatUUID(issue.UserID) != formatUUID(actorID) {
-		http.Error(w, "forbidden: only the original reporter can verify this issue", http.StatusForbidden)
-		return
-	}
-
-	if issue.Status != "pending-verification" {
-		http.Error(w, "issue is not awaiting citizen verification", http.StatusConflict)
+	if err := validateIssueVerificationEligibility(issue, actorID); err != nil {
+		statusCode := http.StatusConflict
+		if errors.Is(err, errIssueVerificationForbidden) {
+			statusCode = http.StatusForbidden
+		}
+		http.Error(w, err.Error(), statusCode)
 		return
 	}
 
